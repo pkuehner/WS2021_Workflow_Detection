@@ -1,0 +1,210 @@
+:root {
+    --primary-color: #5AB9EA;
+    --secondary-color: white;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+}
+
+.theme {
+    background-color: var(--primary-color);
+    color: var(--secondary-color);
+    font-family: sans-serif;
+    font-size: 1.6em;
+}
+
+/* Header */
+.header {
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+}
+
+/* Responsive Layout */
+.row {
+    display: flex;
+    flex-direction: row;
+}
+
+.full {
+    flex: 100%;
+}
+
+.half {
+    flex: 50%;
+}
+
+.third {
+    flex: 33%;
+}
+
+.three-quarter {
+    flex: 75%;
+}
+
+.quarter {
+    flex: 25%;
+}
+
+.container {
+    padding: 5px;
+}
+
+/* Buttons */
+button {
+    width: 100%;
+    border-radius: 10px;
+    border: 3px solid var(--primary-color);
+    margin-top: 10px;
+}
+
+button:hover {
+    background-color: var(--secondary-color);
+    color: var(--primary-color);
+    cursor: pointer;
+    box-shadow: 0 0 10px var(--primary-color) inset;
+}
+
+/* Image */
+.responsive {
+    width: 100%;
+    height: auto;
+    max-height: 85%;
+}
+
+.loader {
+    border: 16px solid #f3f3f3; 
+    border-top: 16px solid var(--primary-color); 
+    border-radius: 50%;
+    width: 120px;
+    height: 120px;
+    margin: 15vh 0 0 30vw;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Checkboxes */
+.checkbox {
+    display: block;
+    position: relative;
+    padding-left: 35px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    background-color: var(--secondary-color);
+    color: var(--primary-color);
+}
+
+.checkbox input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+  
+.checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 25px;
+    width: 25px;
+    background-color: #eee;
+}
+  
+.checkbox:hover input ~ .checkmark {
+    background-color: #ccc;
+}
+  
+.checkbox input:checked ~ .checkmark {
+    background-color: #2196F3;
+}
+  
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+  
+.checkbox input:checked ~ .checkmark:after {
+    display: block;
+}
+  
+.checkbox .checkmark:after {
+    left: 9px;
+    top: 5px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 3px 3px 0;
+    -webkit-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    transform: rotate(45deg);
+}
+
+.last {
+    margin: 0;
+}
+
+/* File upload */
+input[type="file"] {
+    display: none;
+}
+
+.label {
+    display: inline-block;
+    text-align: center;
+    width: 100%;
+    border: 3px solid var(--primary-color);
+    border-radius: 10px;
+    margin-top: 10px;
+    margin-right: 10px;
+    padding-bottom: 2px;
+}
+
+.label:hover {
+    background-color: var(--secondary-color);
+    color: var(--primary-color);
+    cursor: pointer;
+    box-shadow: 0 0 10px var(--primary-color) inset;
+}
+
+.upload {
+    margin-right: 10px;
+}
+
+/* File Download */
+a:link, a:visited {
+    width: 100%;
+    border-radius: 10px;
+    border: 3px solid var(--primary-color);
+    margin-top: 10px;
+    background-color: var(--primary-color);
+    color: var(--secondary-color);
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+}
+  
+a:hover, a:active {
+    background-color: var(--secondary-color);
+    color: var(--primary-color);
+    box-shadow: 0 0 10px var(--primary-color) inset;
+}
+
+@media only screen and (max-width:620px) {
+    /* For mobile phones: */
+    .row {
+        display: flex;
+        flex-direction: column;
+    }
+}
