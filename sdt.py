@@ -22,7 +22,7 @@ for event_a in frequencies:
             sdt[event_b] = {}
         sdt[event_b][event_a] = df_counter / frequencies[event_a]
 
-print(sdt)
+#print(sdt)
 
 
 def find_concurrent_activities(sdt, act_a):
@@ -35,19 +35,21 @@ def find_concurrent_activities(sdt, act_a):
     return conc
 
 #Creates powerset without y
-def powerset(s, y):
+def powerset(s):
     x = len(s)
     powerset = list()
     for i in range(1 << x):
-        powerset.append([s[j] for j in range(x) if (i & (1 << j)) and s[j] != y])
+        powerset.append([s[j] for j in range(x) if (i & (1 << j))])
     return powerset
 
 
 def check_mutual_exclusion(sdt, dfg):
+    pws = powerset(list(frequencies.keys()))
     for event_a in frequencies:
         freq = frequencies[event_a]
-        pws = powerset(list(frequencies.keys()), event_a)
         for set in pws:
+            if event_a in set:
+                continue
             works = True
             if len(set) > 1:
                 dfg_sum = 0
@@ -68,10 +70,12 @@ def check_mutual_exclusion(sdt, dfg):
                     print(event_a)
 
 def check_mutual_exclusion_join(sdt, dfg):
+    pws = powerset(list(frequencies.keys()))
     for event_a in frequencies:
         freq = frequencies[event_a]
-        pws = powerset(list(frequencies.keys()), event_a)
         for set in pws:
+            if event_a in set:
+                continue
             works = True
             if len(set) > 1:
                 dfg_sum = 0
