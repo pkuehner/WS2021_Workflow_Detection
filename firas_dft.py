@@ -40,7 +40,7 @@ class DependencyFrequencyTable:
                     str_counter -= 0.8 ** j
                 self.strength[event_a, event_b] = str_counter / self.frequencies[event_a]
 
-    # find a >>> b and b <<< a. a < b can be found in dfg variable
+    # find a >>> b and b <<< a.  a < b can be found in dfg variable. #b in frequencies variable
     def find_indirect_frequencies(self):
         for event_a in self.frequencies:
             for event_b in self.frequencies:
