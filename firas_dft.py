@@ -60,7 +60,7 @@ class DependencyFrequencyTable:
                 tmp.append(self.event_log[i][j]['concept:name'])
             self.traces[i] = tmp
 
-
+    # not used
     def find_and_mark_concurrents(self):
         for event_a in self.frequencies:
             self.concs[event_a] = self.find_concurrent_activities(event_a)
@@ -69,6 +69,7 @@ class DependencyFrequencyTable:
                     self.sdt[event_a][event_b] = -1
                     self.sdt[event_b][event_a] = -1
 
+    # not used
     def find_concurrent_activities(self, act_a):
         conc = [act_a]
         for event_b in self.frequencies:
