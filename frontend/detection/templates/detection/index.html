@@ -37,7 +37,7 @@
         <div class="row">
             <div class="container full">
                 {% if show_model %}
-                {% with 'detection/'|add:model_name|add:'.png' as model_image %}
+                {% with 'detection/models/'|add:model_name|add:'.png' as model_image %}
                 <img id="imagemodel" src="{% static model_image %}" class="responsive" alt="Model">
                 {% endwith %}
                 {% endif %}
@@ -101,7 +101,7 @@
             </form>
             <div class="row">
                 <div class="full">
-                    {% with 'detection/'|add:model_name|add:'.png' as model_image %}
+                    {% with 'detection/models/'|add:model_name|add:'.png' as model_image %}
                     <a class="theme download" href="{% static model_image %}" download>
                         <i class="fa fa-download"></i> Export Model 
                     </a>
