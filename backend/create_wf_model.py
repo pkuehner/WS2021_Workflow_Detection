@@ -1,5 +1,4 @@
 import copy
-
 from pm4py.objects.process_tree.pt_operator import Operator
 
 
@@ -113,9 +112,7 @@ def recursively_add_tree(parent_tree, tree, wf, initial_event, final_event, coun
     elif tree.operator == Operator.XOR:
         wf, split_gateway, join_gateway, counts = add_xor_gateway(wf, counts)
         for subtree in tree_childs:
-            wf, counts, x, y = recursively_add_tree(tree, subtree, wf, split_gateway, join_gateway,
-                                                      counts,
-                                                      rec_depth + 1)
+            wf, counts, x, y = recursively_add_tree(tree, subtree, wf, split_gateway, join_gateway, counts, rec_depth + 1)
         wf.add_flow(WF.Flow(initial_event, split_gateway))
         wf.add_flow(WF.Flow(join_gateway, final_event))
         initial_connector = split_gateway
@@ -124,9 +121,7 @@ def recursively_add_tree(parent_tree, tree, wf, initial_event, final_event, coun
     elif tree.operator == Operator.PARALLEL:
         wf, split_gateway, join_gateway, counts = add_parallel_gateway(wf, counts)
         for subtree in tree_childs:
-            wf, counts, x, y = recursively_add_tree(tree, subtree, wf, split_gateway, join_gateway,
-                                                      counts,
-                                                      rec_depth + 1)
+            wf, counts, x, y = recursively_add_tree(tree, subtree, wf, split_gateway, join_gateway, counts, rec_depth + 1)
         wf.add_flow(WF.Flow(initial_event, split_gateway))
         wf.add_flow(WF.Flow(join_gateway, final_event))
         initial_connector = split_gateway
@@ -136,10 +131,7 @@ def recursively_add_tree(parent_tree, tree, wf, initial_event, final_event, coun
         initial_intermediate_task = initial_event
         wf, final_intermediate_task, counts = add_tau_task(wf, counts)
         for i in range(len(tree_childs)):
-            wf, counts, initial_connect, final_connect = recursively_add_tree(tree, tree_childs[i], wf,
-                                                                                initial_intermediate_task,
-                                                                                final_intermediate_task, counts,
-                                                                                rec_depth + 1)
+            wf, counts, initial_connect, final_connect = recursively_add_tree(tree, tree_childs[i], wf, initial_intermediate_task, final_intermediate_task, counts, rec_depth + 1)
             initial_intermediate_task = final_connect
             if i == 0:
                 initial_connector = initial_connect
@@ -193,7 +185,7 @@ def delete_tau_transitions(wf, counts):
 
 def apply(tree, parameters=None):
     """
-    Converts the process tree into a BPMN diagram
+    Converts the process tree into a WF Pattern model
     Parameters
     --------------
     tree
@@ -202,8 +194,8 @@ def apply(tree, parameters=None):
         Parameters of the algorithm
     Returns
     --------------
-    bpmn_graph
-        BPMN diagram
+    wf
+        WF Pattern graph
     """
     from wf_graph import WF
     counts = Counts()
