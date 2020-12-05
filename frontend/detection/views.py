@@ -3,12 +3,9 @@ from django.core.files.storage import FileSystemStorage
 from .client import uploadEventLog
 import os.path 
 
+
 def index(request):
     context = {}
-    if 'pn' in request.POST:
-        request.session['model_name'] = 'pn'
-        if request.session.get('log_path', None):
-            uploadEventLog(request.session['log_path'], 'pn')
     if 'workflow' in request.POST:
         request.session['model_name'] = 'workflow'
         if request.session.get('log_path', None):
@@ -17,6 +14,10 @@ def index(request):
         request.session['model_name'] = 'bpmn'
         if request.session.get('log_path', None):
             uploadEventLog(request.session['log_path'], 'bpmn')
+    if 'pn' in request.POST:
+        request.session['model_name'] = 'pn'
+        if request.session.get('log_path', None):
+            uploadEventLog(request.session['log_path'], 'pn')
     model_name = request.session.get('model_name', 'workflow')
     context['show_model'] = False
     if 'upload' in request.POST:
@@ -33,7 +34,7 @@ def index(request):
         print("Aggregate Pattern")
         for item in request.POST:
             print(item)
-    image_path = "detection/static/detection/" + model_name + ".png"
+    image_path = "detection/static/detection/models/" + model_name + ".png"
     if os.path.isfile(image_path):
         context['show_model'] = True
     context['model_name'] = model_name

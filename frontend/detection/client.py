@@ -19,12 +19,12 @@ def uploadEventLog(log_path, image_name):
     upload_file = {"files": event_log}
     data = {'model': image_name}
     try:
-        r = requests.post(url, data = data, files = upload_file)
+        r = requests.post(url, data=data, files=upload_file)
     except requests.exceptions.RequestException as e:
         print(e)
         r = None
     if r:
         if r.status_code == 200:
-            image_path = "detection/static/detection/" + image_name + ".png"
+            image_path = "detection/static/detection/models/" + image_name + ".png"
             with open(image_path, 'wb') as f:
                 f.write(r.content)
