@@ -15,7 +15,7 @@ from pm4py.objects.process_tree.pt_operator import Operator
 patterns = {}
 
 
-def create_pattern(name, incoming_nodes, outgoing_nodes, partner, inner_nodes):
+def create_pattern(name, incoming_nodes, outgoing_nodes, partner, inner_nodes, is_loop = False):
     """This function creates a pattern object that can then be easily uses as JSON object
 
         Parameters:
@@ -41,7 +41,8 @@ def create_pattern(name, incoming_nodes, outgoing_nodes, partner, inner_nodes):
         "incoming_nodes": incoming_nodes,
         "outgoing_nodes": outgoing_nodes,
         "partner": partner,
-        "inner_nodes": inner_nodes
+        "inner_nodes": inner_nodes,
+        "isLoop": is_loop
     }
     patterns[name] = pattern
     return pattern
@@ -60,13 +61,13 @@ def find_pattern(node, end):
         if node.get_name() in patterns:
             return [node.get_name()]
         if node.get_name().endswith('split'):
-            join_node = find_join_for_XOR_Split(node, 0)
+            join_node, isLoop = find_join_for_XOR_Split(node, 0)
             inner_patterns = []
             for arc in out_arcs:
                 target = arc.get_target()
                 inner_pattern = find_pattern(target, join_node.get_name())
                 inner_patterns.extend(inner_pattern)
-            create_pattern(node.get_name(), [], [], join_node.get_name(), inner_patterns)
+            create_pattern(node.get_name(), [], [], join_node.get_name(), inner_patterns, isLoop)
             return [node.get_name()]
 
     if isinstance(node, WF.ParallelGateway):
@@ -100,14 +101,17 @@ def find_join_for_XOR_Split(node, openSplits):
         else:
             openSplits -= 1
         if openSplits == 0:
-            return node
+            return node, False
+    join_node = None
+    isLoop = False
     for arc in out_arcs:
         arc_node = arc.get_target()
-        x_join = find_join_for_XOR_Split(arc_node, openSplits)
+        x_join, is_loop = find_join_for_XOR_Split(arc_node, openSplits)
         if x_join != None:
-            return x_join  # TODO: This probably is a loop
-    return None
-
+            join_node = x_join  # TODO: This probably is a loop
+        else:
+            isLoop = True
+    return join_node, isLoop
 
 def find_join_for_And_Split(node, openSplits):
     out_arcs = node.get_out_arcs()
