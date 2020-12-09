@@ -12,6 +12,8 @@ from pm4py.objects.log.util import dataframe_utils
 from pm4py.objects.conversion.log import converter as log_converter
 from pm4py.objects.process_tree.pt_operator import Operator
 
+patterns = {}
+
 
 def create_pattern(name, incoming_nodes, outgoing_nodes, partner, inner_nodes):
     """This function creates a pattern object that can then be easily uses as JSON object
@@ -34,13 +36,16 @@ def create_pattern(name, incoming_nodes, outgoing_nodes, partner, inner_nodes):
 
        """
 
-    return {
-            "name": name,
-            "incoming_nodes": incoming_nodes,
-            "outgoing_nodes": outgoing_nodes,
-            "partner": partner,
-            "inner_nodes": inner_nodes
-        }
+    pattern = {
+        "name": name,
+        "incoming_nodes": incoming_nodes,
+        "outgoing_nodes": outgoing_nodes,
+        "partner": partner,
+        "inner_nodes": inner_nodes
+    }
+    patterns[name] = pattern
+    return pattern
+
 
 def find_patterns(wf_model):
     for node in wf_model.get_nodes():
@@ -49,19 +54,42 @@ def find_patterns(wf_model):
                 print(find_join_for_XOR_Split(node, 0))
 
 
-def find_pattern(node):
+def find_pattern(node, end):
     out_arcs = node.get_out_arcs()
     if isinstance(node, WF.ExclusiveGateway):
+        if node.get_name() in patterns:
+            return [node.get_name()]
         if node.get_name().endswith('split'):
             join_node = find_join_for_XOR_Split(node, 0)
             inner_patterns = []
             for arc in out_arcs:
-                target = out_arcs.get_target()
-                inner_pattern = find_pattern(target)
-                inner_patterns.append(inner_pattern)
+                target = arc.get_target()
+                inner_pattern = find_pattern(target, join_node.get_name())
+                inner_patterns.extend(inner_pattern)
             create_pattern(node.get_name(), [], [], join_node.get_name(), inner_patterns)
+            return [node.get_name()]
 
+    if isinstance(node, WF.ParallelGateway):
+        if node.get_name() in patterns:
+            return [node.get_name()]
+        if node.get_name().endswith('split'):
+            join_node = find_join_for_And_Split(node, 0)
+            inner_patterns = []
+            for arc in out_arcs:
+                target = arc.get_target()
+                inner_pattern = find_pattern(target, join_node.get_name())
+                inner_patterns.extend(inner_pattern)
+            create_pattern(node.get_name(), [], [], join_node.get_name(), inner_patterns)
+            return [node.get_name()]
 
+    if node.get_name() != end:
+        inner_patterns = [node.get_name()]
+        for arc in out_arcs:
+            target = arc.get_target()
+            inner_patterns.extend(find_pattern(target, end))
+        return inner_patterns
+
+    return []
 
 
 def find_join_for_XOR_Split(node, openSplits):
@@ -72,55 +100,37 @@ def find_join_for_XOR_Split(node, openSplits):
         else:
             openSplits -= 1
         if openSplits == 0:
-            return [node]
-    inner_nodes = []
+            return node
     for arc in out_arcs:
         arc_node = arc.get_target()
-        nodes = find_join_for_XOR_Split(arc_node, openSplits)
-        nodes.insert(0, node)
-        if len(out_arcs) > 1:
-            inner_nodes.append(nodes)
-        else: inner_nodes.extend(nodes)
-    return inner_nodes
-
-
-
-
-import tempfile
-from graphviz import Digraph
-
-def ptree_to_plist(parent_tree, tree):
-    from wf_graph import WF
-    tree_childs = [child for child in tree.children]
-    initial_connector = None
-    final_connector = None
-
-    if tree.operator is None:
-        trans = tree
-        if trans.label is None:
-            return ['Silent Activity']
-        else:
-            return [trans.label]
-
-    elif tree.operator == Operator.XOR or tree.operator == Operator.PARALLEL or tree.operator == Operator.SEQUENCE or tree.operator == Operator.LOOP:
-        inner_patterns = []
-        for subtree in tree_childs:
-            inner_patterns.append(ptree_to_List(tree, subtree))
-        return create_pattern(tree.operator, inner_patterns)
-
+        x_join = find_join_for_XOR_Split(arc_node, openSplits)
+        if x_join != None:
+            return x_join  # TODO: This probably is a loop
     return None
 
 
-
-
-
-
+def find_join_for_And_Split(node, openSplits):
+    out_arcs = node.get_out_arcs()
+    if isinstance(node, WF.ParallelGateway):
+        if node.get_name().endswith('split'):
+            openSplits += 1
+        else:
+            openSplits -= 1
+        if openSplits == 0:
+            return node
+    for arc in out_arcs:
+        arc_node = arc.get_target()
+        x_join = find_join_for_And_Split(arc_node, openSplits)
+        return x_join
+    return None
 
 
 log = xes_import.apply('logs/running-example.xes')
 ptree = inductive_miner.apply_tree(log)
-print(ptree_to_List(ptree, ptree))
+wf_model = pt_converter.apply(ptree)
+for node in wf_model.get_nodes():
+    find_pattern(node, None)
 
-
-
-
+print(patterns)
+# for node in wf_model.get_nodes():
+# print(find_pattern(node))
