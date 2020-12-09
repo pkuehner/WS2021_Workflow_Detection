@@ -129,12 +129,39 @@ def find_join_for_And_Split(node, openSplits):
     return None
 
 
-log = xes_import.apply('logs/running-example.xes')
+#log = xes_import.apply('logs/running-example.xes')
+import pandas as pd
+from pm4py.objects.log.util import dataframe_utils
+from pm4py.objects.conversion.log import converter as log_converter
+
+log_csv = pd.read_csv('test-data/OR.csv', sep=',')
+log_csv = dataframe_utils.convert_timestamp_columns_in_df(log_csv)
+log_csv = log_csv.sort_values('time:timestamp')
+log = log_converter.apply(log_csv)
 ptree = inductive_miner.apply_tree(log)
+
+from pm4py.visualization.process_tree import visualizer as pt_vis_factory
+gviz = pt_vis_factory.apply(ptree, parameters={"format": "png"})
+pt_vis_factory.view(gviz)
 wf_model = pt_converter.apply(ptree)
 for node in wf_model.get_nodes():
     find_pattern(node, None)
 
+
+def check_patterns_for_or():
+    for pattern in patterns:
+        pattern = patterns[pattern]
+        if pattern['name'].startswith('parallel'):
+            for node in pattern['inner_nodes']:
+                is_or = True
+                if 'inner_nodes' in node:
+                    if not node['name'].startswith('xor') or node['inner_nodes'] > 1:
+                        is_or = False
+                        break
+                pattern['is_or'] = is_or
+
+
+check_patterns_for_or()
 print(patterns)
 # for node in wf_model.get_nodes():
 # print(find_pattern(node))
