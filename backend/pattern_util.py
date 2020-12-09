@@ -129,43 +129,70 @@ def find_join_for_And_Split(node, openSplits):
     return None
 
 
-#log = xes_import.apply('logs/running-example.xes')
-import pandas as pd
-from pm4py.objects.log.util import dataframe_utils
-from pm4py.objects.conversion.log import converter as log_converter
-
-log_csv = pd.read_csv('test-data/OR.csv', sep=',')
-log_csv = dataframe_utils.convert_timestamp_columns_in_df(log_csv)
-log_csv = log_csv.sort_values('time:timestamp')
-log = log_converter.apply(log_csv)
+log = xes_import.apply('logs/running-example.xes')
+# import pandas as pd
+# from pm4py.objects.log.util import dataframe_utils
+# from pm4py.objects.conversion.log import converter as log_converter
+#
+# log_csv = pd.read_csv('test-data/OR.csv', sep=',')
+# log_csv = dataframe_utils.convert_timestamp_columns_in_df(log_csv)
+# log_csv = log_csv.sort_values('time:timestamp')
+# log = log_converter.apply(log_csv)
 ptree = inductive_miner.apply_tree(log)
 
 from pm4py.visualization.process_tree import visualizer as pt_vis_factory
-gviz = pt_vis_factory.apply(ptree, parameters={"format": "png"})
-pt_vis_factory.view(gviz)
 wf_model = pt_converter.apply(ptree)
+gviz = wf_visualizer(wf_model)
+model_path = 'models/' + 'test' + '.png'
+gsave.save(gviz, model_path)
 for node in wf_model.get_nodes():
     find_pattern(node, None)
+
 
 
 def check_patterns_for_or():
     for pattern in patterns:
         pattern = patterns[pattern]
         if pattern['name'].startswith('parallel'):
+            is_or = True
             for node in pattern['inner_nodes']:
-                is_or = True
                 if 'inner_nodes' in node:
                     if not node['name'].startswith('xor') or node['inner_nodes'] > 1:
                         is_or = False
                         break
-                pattern['is_or'] = is_or
+                else:
+                    is_or = False
+                    break
+            pattern['is_or'] = is_or
 
 
 check_patterns_for_or()
 print(patterns)
+def recreate_sequences(node, seen):
+        if(node not in seen):
+            sequence = find_pattern(node, None)
+
+            seen.add(node)
+            if sequence[-1] != 'end':
+                pattern = patterns[sequence[-1]]
+                partner = pattern['partner']
+                if pattern['isLoop']:
+                    print('Found Loop')
+                    for node_2 in wf_model.get_nodes():
+                        if node_2.get_name() == pattern['inner_nodes'][1]:
+                            sequence.append(recreate_sequences(node_2, seen))
+                        if node_2.get_name() == pattern['inner_nodes'][0]:
+                            sequence.append(recreate_sequences(node_2, seen))
+                else:
+                    for node_2 in wf_model.get_nodes():
+                        if node_2.get_name() == partner:
+                            for target in node_2.get_out_arcs():
+                                sequence.extend(recreate_sequences(target.get_target(), seen))
+            return sequence
+        return []
+
 for node in wf_model.get_nodes():
     if isinstance(node, WF.StartEvent):
-        print(find_pattern(node, None))
-
+        print(recreate_sequences(node, set()))
 # for node in wf_model.get_nodes():
 # print(find_pattern(node))
