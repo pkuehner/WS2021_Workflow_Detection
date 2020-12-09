@@ -2,7 +2,7 @@ import tempfile
 from graphviz import Digraph
 
 
-def graphviz_visualization(wf_model, pattern_to_merge):
+def graphviz_visualization(wf_model, pattern_to_merge= []):
     """
     Do GraphViz visualization of a WF Model
     Parameters
@@ -18,13 +18,13 @@ def graphviz_visualization(wf_model, pattern_to_merge):
     filename = tempfile.NamedTemporaryFile(suffix='.gv')
     viz = Digraph("", filename=filename.name, engine='dot', graph_attr={'bgcolor': 'transparent'})
 
-    inner_nodes = pattern_to_merge['inner_nodes']
-    split_name = pattern_to_merge['name']
-    join_name = pattern_to_merge['partner']
+    #inner_nodes = pattern_to_merge['inner_nodes']
+    #split_name = pattern_to_merge['name']
+    #join_name = pattern_to_merge['partner']
     # represent nodes
     viz.attr('node', shape='box')
     for node in wf_model.get_nodes():
-        if node.get_name() not in inner_nodes:
+        #if node.get_name() not in inner_nodes:
             if isinstance(node, WF.StartEvent):
                 viz.node(node.get_id(), "Start", style='filled', shape='circle')
             elif isinstance(node, WF.EndEvent):
@@ -43,12 +43,11 @@ def graphviz_visualization(wf_model, pattern_to_merge):
                 viz.node(node.get_id(), node.get_name(), style='filled')
 
     for flow in wf_model.get_flows():
-        if flow.get_source().get_name() not in inner_nodes and flow.get_target().get_name() not in inner_nodes:
-            viz.edge(flow.get_source().get_id(), flow.get_target().get_id(), label="")
-    for node in wf_model.get_nodes():
-        for node_2 in wf_model.get_nodes():
-            if node.get_name() == split_name and node_2.get_name() == join_name:
-                viz.edge(node.get_id(), node_2.get_id(), label="")
+        viz.edge(flow.get_source().get_id(), flow.get_target().get_id(), label="")
+    # for node in wf_model.get_nodes():
+    #     for node_2 in wf_model.get_nodes():
+    #         if node.get_name() == split_name and node_2.get_name() == join_name:
+    #             viz.edge(node.get_id(), node_2.get_id(), label="")
 
     viz.attr(overlap='false')
     viz.attr(fontsize='11')
