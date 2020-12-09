@@ -1,21 +1,15 @@
 from wf_graph import WF
 import create_wf_model as pt_converter
-from pm4py.objects.conversion.process_tree import converter as bpmn_converter
 from wf_pattern_visualizer import graphviz_visualization as wf_visualizer
-from bpmn_visualizer import graphviz_visualization as bpmn_visualizer
 from pm4py.algo.discovery.inductive import algorithm as inductive_miner
-from pm4py.visualization.petrinet import visualizer as pn_visualizer
+
 from pm4py.objects.log.importer.xes import importer as xes_import
 from pm4py.visualization.common import save as gsave
-import pandas as pd
-from pm4py.objects.log.util import dataframe_utils
-from pm4py.objects.conversion.log import converter as log_converter
-from pm4py.objects.process_tree.pt_operator import Operator
 
 patterns = {}
 
 
-def create_pattern(name, incoming_nodes, outgoing_nodes, partner, inner_nodes, is_loop = False):
+def create_pattern(name, incoming_nodes, outgoing_nodes, partner, inner_nodes, is_loop = False, is_or = False):
     """This function creates a pattern object that can then be easily uses as JSON object
 
         Parameters:
@@ -42,20 +36,13 @@ def create_pattern(name, incoming_nodes, outgoing_nodes, partner, inner_nodes, i
         "outgoing_nodes": outgoing_nodes,
         "partner": partner,
         "inner_nodes": inner_nodes,
-        "isLoop": is_loop
+        "isLoop": is_loop,
+        "is_or": is_or
     }
     patterns[name] = pattern
     return pattern
 
-
-def find_patterns(wf_model):
-    for node in wf_model.get_nodes():
-        if isinstance(node, WF.ExclusiveGateway):
-            if node.get_name().endswith('split'):
-                print(find_join_for_XOR_Split(node, 0))
-
-
-def find_pattern(node, end):
+def find_split_join_pattern(node, end):
     out_arcs = node.get_out_arcs()
     if isinstance(node, WF.ExclusiveGateway):
         if node.get_name() in patterns:
@@ -65,7 +52,7 @@ def find_pattern(node, end):
             inner_patterns = []
             for arc in out_arcs:
                 target = arc.get_target()
-                inner_pattern = find_pattern(target, join_node.get_name())
+                inner_pattern = find_split_join_pattern(target, join_node.get_name())
                 inner_patterns.extend(inner_pattern)
             create_pattern(node.get_name(), [], [], join_node.get_name(), inner_patterns, isLoop)
             return [node.get_name()]
@@ -78,7 +65,7 @@ def find_pattern(node, end):
             inner_patterns = []
             for arc in out_arcs:
                 target = arc.get_target()
-                inner_pattern = find_pattern(target, join_node.get_name())
+                inner_pattern = find_split_join_pattern(target, join_node.get_name())
                 inner_patterns.extend(inner_pattern)
             create_pattern(node.get_name(), [], [], join_node.get_name(), inner_patterns)
             return [node.get_name()]
@@ -87,7 +74,7 @@ def find_pattern(node, end):
         inner_patterns = [node.get_name()]
         for arc in out_arcs:
             target = arc.get_target()
-            inner_patterns.extend(find_pattern(target, end))
+            inner_patterns.extend(find_split_join_pattern(target, end))
         return inner_patterns
 
     return []
@@ -129,27 +116,6 @@ def find_join_for_And_Split(node, openSplits):
     return None
 
 
-log = xes_import.apply('logs/running-example.xes')
-# import pandas as pd
-# from pm4py.objects.log.util import dataframe_utils
-# from pm4py.objects.conversion.log import converter as log_converter
-#
-# log_csv = pd.read_csv('test-data/OR.csv', sep=',')
-# log_csv = dataframe_utils.convert_timestamp_columns_in_df(log_csv)
-# log_csv = log_csv.sort_values('time:timestamp')
-# log = log_converter.apply(log_csv)
-ptree = inductive_miner.apply_tree(log)
-
-from pm4py.visualization.process_tree import visualizer as pt_vis_factory
-wf_model = pt_converter.apply(ptree)
-gviz = wf_visualizer(wf_model)
-model_path = 'models/' + 'test' + '.png'
-gsave.save(gviz, model_path)
-for node in wf_model.get_nodes():
-    find_pattern(node, None)
-
-
-
 def check_patterns_for_or():
     for pattern in patterns:
         pattern = patterns[pattern]
@@ -166,11 +132,9 @@ def check_patterns_for_or():
             pattern['is_or'] = is_or
 
 
-check_patterns_for_or()
-print(patterns)
 def recreate_sequences(node, seen):
         if(node not in seen):
-            sequence = find_pattern(node, None)
+            sequence = find_split_join_pattern(node, None)
 
             seen.add(node)
             if sequence[-1] != 'end':
@@ -191,8 +155,51 @@ def recreate_sequences(node, seen):
             return sequence
         return []
 
-for node in wf_model.get_nodes():
-    if isinstance(node, WF.StartEvent):
-        print(recreate_sequences(node, set()))
+def expand_inner_nodes(pattern):
+    found = True
+    seen = []
+    while found:
+        found = False
+        for node in pattern['inner_nodes']:
+            if node in patterns:
+                pattern['inner_nodes'].remove(node)
+                seen.append(node)
+                pattern['inner_nodes'].extend(patterns[node]['inner_nodes'])
+                pattern['inner_nodes'].append(patterns[node]['partner'])
+                found = True
+    pattern['inner_nodes'].extend(seen)
+
+def discover_patterns(wf_model):
+    for node in wf_model.get_nodes():
+        find_split_join_pattern(node, None)
+
+    check_patterns_for_or()
+    print(patterns)
+
+    for node in wf_model.get_nodes():
+        if isinstance(node, WF.StartEvent):
+            print(recreate_sequences(node, set()))
+
+log = xes_import.apply('logs/running-example.xes')
+# import pandas as pd
+# from pm4py.objects.log.util import dataframe_utils
+# from pm4py.objects.conversion.log import converter as log_converter
+#
+# log_csv = pd.read_csv('test-data/OR.csv', sep=',')
+# log_csv = dataframe_utils.convert_timestamp_columns_in_df(log_csv)
+# log_csv = log_csv.sort_values('time:timestamp')
+# log = log_converter.apply(log_csv)
+ptree = inductive_miner.apply_tree(log)
+
+from pm4py.visualization.process_tree import visualizer as pt_vis_factory
+wf_model = pt_converter.apply(ptree)
+
+
+discover_patterns(wf_model)
+expand_inner_nodes(patterns['xor_2_split'])
+print(patterns['xor_2_split'])
+gviz = wf_visualizer(wf_model, patterns['xor_2_split'])
+model_path = 'models/' + 'test' + '.png'
+gsave.save(gviz, model_path)
 # for node in wf_model.get_nodes():
 # print(find_pattern(node))
