@@ -163,5 +163,9 @@ def check_patterns_for_or():
 
 check_patterns_for_or()
 print(patterns)
+for node in wf_model.get_nodes():
+    if isinstance(node, WF.StartEvent):
+        print(find_pattern(node, None))
+
 # for node in wf_model.get_nodes():
 # print(find_pattern(node))
