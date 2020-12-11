@@ -11,7 +11,7 @@ from backend.create_wf_model import change_and_xor_to_or
 patterns = {}
 
 
-def create_pattern(name, incoming_nodes, outgoing_nodes, partner, inner_nodes, is_loop = False, is_or = False):
+def create_pattern(name, incoming_nodes, outgoing_nodes, partner, inner_nodes, is_loop=False, is_or=False):
     """This function creates a pattern object that can then be easily uses as JSON object
 
         Parameters:
@@ -43,6 +43,7 @@ def create_pattern(name, incoming_nodes, outgoing_nodes, partner, inner_nodes, i
     }
     patterns[name] = pattern
     return pattern
+
 
 def find_split_join_pattern(node, end):
     out_arcs = node.get_out_arcs()
@@ -115,6 +116,7 @@ def find_join_for_XOR_Split(node, openSplits):
             isLoop = True
     return join_node, isLoop
 
+
 def find_join_for_And_Split(node, openSplits):
     out_arcs = node.get_out_arcs()
     if isinstance(node, WF.ParallelGateway):
@@ -129,6 +131,7 @@ def find_join_for_And_Split(node, openSplits):
         x_join = find_join_for_And_Split(arc_node, openSplits)
         return x_join
     return None
+
 
 def find_join_for_Or_Split(node, openSplits):
     out_arcs = node.get_out_arcs()
@@ -164,27 +167,28 @@ def check_patterns_for_or():
 
 
 def recreate_sequences(node, seen):
-        if(node not in seen):
-            sequence = find_split_join_pattern(node, None)
+    if (node not in seen):
+        sequence = find_split_join_pattern(node, None)
 
-            seen.add(node)
-            if sequence[-1] != 'end':
-                pattern = patterns[sequence[-1]]
-                partner = pattern['partner']
-                if pattern['isLoop']:
-                    print('Found Loop')
-                    for node_2 in wf_model.get_nodes():
-                        if node_2.get_name() == pattern['inner_nodes'][1]:
-                            sequence.append(recreate_sequences(node_2, seen))
-                        if node_2.get_name() == pattern['inner_nodes'][0]:
-                            sequence.append(recreate_sequences(node_2, seen))
-                else:
-                    for node_2 in wf_model.get_nodes():
-                        if node_2.get_name() == partner:
-                            for target in node_2.get_out_arcs():
-                                sequence.extend(recreate_sequences(target.get_target(), seen))
-            return sequence
-        return []
+        seen.add(node)
+        if sequence[-1] != 'end':
+            pattern = patterns[sequence[-1]]
+            partner = pattern['partner']
+            if pattern['isLoop']:
+                print('Found Loop')
+                for node_2 in wf_model.get_nodes():
+                    if node_2.get_name() == pattern['inner_nodes'][1]:
+                        sequence.append(recreate_sequences(node_2, seen))
+                    if node_2.get_name() == pattern['inner_nodes'][0]:
+                        sequence.append(recreate_sequences(node_2, seen))
+            else:
+                for node_2 in wf_model.get_nodes():
+                    if node_2.get_name() == partner:
+                        for target in node_2.get_out_arcs():
+                            sequence.extend(recreate_sequences(target.get_target(), seen))
+        return sequence
+    return []
+
 
 def expand_inner_nodes(pattern):
     found = True
@@ -200,14 +204,15 @@ def expand_inner_nodes(pattern):
                 found = True
     pattern['inner_nodes'].extend(seen)
 
+
 def merge_pattern(pattern, wf_model):
     pass
+
 
 def get_node_by_name(name):
     for node in wf_model.get_nodes():
         if node.get_name() == name:
             return node
-
 
 
 def make_ors(wf_model):
@@ -235,6 +240,7 @@ def discover_patterns(wf_model):
     for node in wf_model.get_nodes():
         if isinstance(node, WF.StartEvent):
             print(recreate_sequences(node, set()))
+
 
 def patterns_to_json():
     patterns_list = []
@@ -282,21 +288,21 @@ def patterns_to_json():
             incoming_nodes = []
             outgoing_nodes = []
             for arc in node.get_in_arcs():
-                incoming_nodes.append(arc.get_source().get_name())
+                if arc.get_source().get_name() not in seen:
+                    incoming_nodes.append(arc.get_source().get_name())
             for arc in node.get_out_arcs():
-                outgoing_nodes.append(arc.get_target().get_name())
-
-            pattern_as_json = {
-                'pattern_node': node.get_name(),
-                'incoming_nodes': incoming_nodes,
-                'outgoing_nodes': outgoing_nodes,
-                'pattern_type': 'Sequence'
-            }
-            patterns_list.append(pattern_as_json)
+                if arc.get_target().get_name() not in seen:
+                    outgoing_nodes.append(arc.get_target().get_name())
+            if len(outgoing_nodes) > 0:
+                pattern_as_json = {
+                    'pattern_node': node.get_name(),
+                    'incoming_nodes': incoming_nodes,
+                    'outgoing_nodes': outgoing_nodes,
+                    'pattern_type': 'Sequence'
+                }
+                patterns_list.append(pattern_as_json)
 
     return patterns_list
-
-
 
 
 log = xes_import.apply('logs/running-example.xes')
@@ -307,10 +313,11 @@ from pm4py.objects.conversion.log import converter as log_converter
 log_csv = pd.read_csv('test-data/OR.csv', sep=',')
 log_csv = dataframe_utils.convert_timestamp_columns_in_df(log_csv)
 log_csv = log_csv.sort_values('time:timestamp')
-#log = log_converter.apply(log_csv)
+# log = log_converter.apply(log_csv)
 ptree = inductive_miner.apply_tree(log)
 
 from pm4py.visualization.process_tree import visualizer as pt_vis_factory
+
 wf_model = pt_converter.apply(ptree)
 
 discover_patterns(wf_model)
@@ -321,7 +328,7 @@ discover_patterns(wf_model)
 for pattern in patterns_to_json():
     print(pattern)
 
-#print(recreate_sequences(get_node_by_name('xor_2_split'), set()))
+# print(recreate_sequences(get_node_by_name('xor_2_split'), set()))
 # pattern_to_merge = 'parallel_1_split'
 # expand_inner_nodes(patterns[pattern_to_merge])
 # print(patterns[pattern_to_merge])
