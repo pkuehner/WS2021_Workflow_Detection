@@ -89,6 +89,67 @@ def add_parallel_gateway(wf, counts):
 
 def change_and_xor_to_or(wf, and_split, and_join, xors):
     from wf_graph import WF
+    split_name = "or_split"
+    join_name = "or_join"
+
+    flows_in = []
+    flows_out = []
+    flows_to_remove = []
+    for flow in wf.get_flows():
+        if flow.get_target() == and_split:
+            flows_in.append(flow.get_source())
+            flows_to_remove.append(flow)
+        elif flow.get_source() == and_join:
+            flows_out.append(flow.get_target())
+            flows_to_remove.append(flow)
+        elif flow.get_source() == and_split:
+            flows_to_remove.append(flow)
+        elif flow.get_target() == and_join:
+            flows_to_remove.append(flow)
+
+    xor_out = []
+    xor_in = []
+    for (xor_split, xor_join) in xors:
+        for flow in wf.get_flows():
+            if flow.get_source() == xor_split:
+                if flow.get_target() != xor_join:
+                    xor_out.append(flow.get_target())
+                flows_to_remove.append(flow)
+            elif flow.get_target() == xor_join:
+                if flow.get_source() != xor_split:
+                    xor_in.append(flow.get_source())
+                flows_to_remove.append(flow)
+
+
+    for flow in flows_to_remove:
+        wf.remove_flow(flow)
+    for (xor_split, xor_join) in xors:
+        wf.remove_node(xor_join)
+        wf.remove_node(xor_split)
+    wf.remove_node(and_split)
+    wf.remove_node(and_join)
+
+    split = WF.InclusiveGateway(name=split_name)
+    join = WF.InclusiveGateway(name=join_name)
+    wf.add_node(split)
+    wf.add_node(join)
+
+    for nodes in flows_in:
+        wf.add_flow(WF.Flow(nodes, split))
+
+    for nodes in flows_out:
+        wf.add_flow(WF.Flow(join, nodes))
+
+    for nodes in xor_in:
+        wf.add_flow(WF.Flow(nodes, join))
+
+    for nodes in xor_out:
+        wf.add_flow(WF.Flow(split, nodes))
+
+    return wf
+
+def merge_split_join(wf, split, join, xors):
+    from wf_graph import WF
     split_name = "Or_split"
     join_name = "Or_join"
 

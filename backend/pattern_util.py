@@ -236,6 +236,69 @@ def discover_patterns(wf_model):
         if isinstance(node, WF.StartEvent):
             print(recreate_sequences(node, set()))
 
+def patterns_to_json():
+    patterns_list = []
+    seen = set()
+    seen.add('end')
+    for pattern_name in patterns:
+        for pattern in [pattern_name, patterns[pattern_name]['partner']]:
+            incoming_nodes = []
+            outgoing_nodes = []
+            seen.add(pattern)
+            node = get_node_by_name(pattern)
+            for arc in node.get_in_arcs():
+                incoming_nodes.append(arc.get_source().get_name())
+            for arc in node.get_out_arcs():
+                outgoing_nodes.append(arc.get_target().get_name())
+            pattern_type = 'None'
+
+            if pattern.startswith('xor') and pattern.endswith('split'):
+                pattern_type = 'XOR Split'
+            elif pattern.startswith('xor') and pattern.endswith('join'):
+                pattern_type = 'XOR Join'
+            elif pattern.startswith('or') and pattern.endswith('split'):
+                pattern_type = 'OR Split'
+            elif pattern.startswith('or') and pattern.endswith('join'):
+                pattern_type = 'OR Join'
+            elif pattern.startswith('parallel') and pattern.endswith('split'):
+                pattern_type = 'AND Split'
+            elif pattern.startswith('parallel') and pattern.endswith('join'):
+                pattern_type = 'AND Join'
+
+            if patterns[pattern_name]['isLoop'] and pattern.endswith('join'):
+                pattern_type = 'Loop Join'
+            elif patterns[pattern_name]['isLoop'] and pattern.endswith('split'):
+                pattern_type = 'Loop Split'
+            pattern_as_json = {
+                'pattern_node': pattern,
+                'incoming_nodes': incoming_nodes,
+                'outgoing_nodes': outgoing_nodes,
+                'pattern_type': pattern_type
+            }
+            patterns_list.append(pattern_as_json)
+
+    for node in wf_model.get_nodes():
+        if node.get_name() not in seen:
+            incoming_nodes = []
+            outgoing_nodes = []
+            for arc in node.get_in_arcs():
+                incoming_nodes.append(arc.get_source().get_name())
+            for arc in node.get_out_arcs():
+                outgoing_nodes.append(arc.get_target().get_name())
+
+            pattern_as_json = {
+                'pattern_node': node.get_name(),
+                'incoming_nodes': incoming_nodes,
+                'outgoing_nodes': outgoing_nodes,
+                'pattern_type': 'Sequence'
+            }
+            patterns_list.append(pattern_as_json)
+
+    return patterns_list
+
+
+
+
 log = xes_import.apply('logs/running-example.xes')
 import pandas as pd
 from pm4py.objects.log.util import dataframe_utils
@@ -244,7 +307,7 @@ from pm4py.objects.conversion.log import converter as log_converter
 log_csv = pd.read_csv('test-data/OR.csv', sep=',')
 log_csv = dataframe_utils.convert_timestamp_columns_in_df(log_csv)
 log_csv = log_csv.sort_values('time:timestamp')
-log = log_converter.apply(log_csv)
+#log = log_converter.apply(log_csv)
 ptree = inductive_miner.apply_tree(log)
 
 from pm4py.visualization.process_tree import visualizer as pt_vis_factory
@@ -255,6 +318,10 @@ discover_patterns(wf_model)
 make_ors(wf_model)
 patterns = {}
 discover_patterns(wf_model)
+for pattern in patterns_to_json():
+    print(pattern)
+
+#print(recreate_sequences(get_node_by_name('xor_2_split'), set()))
 # pattern_to_merge = 'parallel_1_split'
 # expand_inner_nodes(patterns[pattern_to_merge])
 # print(patterns[pattern_to_merge])
