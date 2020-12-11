@@ -1,6 +1,6 @@
 import flask
 from flask import request, send_file
-from model_detection import discover_wf_model, discover_bpmn_model, discover_pn_model, discover_patterns
+from model_detection import discover_wf_model, discover_bpmn_model, discover_pn_model
 
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
@@ -11,7 +11,7 @@ def upload_event_log():
     """
     Gets an event log, discovers the specified models and returns the image representation
     """
-    print(request.values['models'])
+    print(request.values['model'])
     log_path = None
     model_name = None
     model_path = None
@@ -22,7 +22,7 @@ def upload_event_log():
             print(event_log)
             print(log_path)
             event_log.save(log_path)
-    model_name = request.values['models']
+    model_name = request.values['model']
     if model_name == 'workflow':
         model_path = discover_wf_model(log_path, model_name)
         return send_file(model_path, mimetype='image/png')
@@ -32,6 +32,3 @@ def upload_event_log():
     elif model_name == 'pn':
         model_path = discover_pn_model(log_path, model_name)
         return send_file(model_path, mimetype='image/png')
-    elif model_name == 'patterns':
-        json_data = discover_patterns(log_path, model_name)
-        return json_data

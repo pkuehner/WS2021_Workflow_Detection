@@ -49,7 +49,7 @@ def discover_wf_model(log_path, model_name):
     ptree = inductive_miner.apply_tree(log)
     wf_model = pt_converter.apply(ptree)
     gviz = wf_visualizer(wf_model)
-    model_path = 'models/' + model_name + '.png'
+    model_path = 'model/' + model_name + '.png'
     gsave.save(gviz, model_path)
     return model_path
 
@@ -71,7 +71,7 @@ def discover_pn_model(log_path, model_name):
     log = xes_import.apply(log_path)
     net, initial_marking, final_marking = inductive_miner.apply(log)
     gviz = pn_visualizer.apply(net, initial_marking, final_marking, variant=pn_visualizer.Variants.FREQUENCY, log=log)
-    model_path = 'models/' + model_name + '.png'
+    model_path = 'model/' + model_name + '.png'
     pn_visualizer.save(gviz, model_path)
     return model_path
 
@@ -94,7 +94,7 @@ def discover_bpmn_model(log_path, model_name):
     ptree = inductive_miner.apply_tree(log)
     bpmn = bpmn_converter.apply(ptree, variant=bpmn_converter.Variants.TO_BPMN)
     gviz = bpmn_visualizer(bpmn)
-    model_path = 'models/' + model_name + '.png'
+    model_path = 'model/' + model_name + '.png'
     gsave.save(gviz, model_path)
     return model_path
 
