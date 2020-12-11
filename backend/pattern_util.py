@@ -5,8 +5,8 @@ from pm4py.algo.discovery.inductive import algorithm as inductive_miner
 
 from pm4py.objects.log.importer.xes import importer as xes_import
 from pm4py.visualization.common import save as gsave
-
-from backend.create_wf_model import change_and_xor_to_or
+import json
+from create_wf_model import change_and_xor_to_or
 
 
 class pattern_finder:
@@ -306,34 +306,27 @@ class pattern_finder:
                     }
                     patterns_list.append(pattern_as_json)
 
-        return patterns_list
+        return json.dumps(patterns_list)
 
 
-log = xes_import.apply('logs/running-example.xes')
-import pandas as pd
-from pm4py.objects.log.util import dataframe_utils
-from pm4py.objects.conversion.log import converter as log_converter
+# log = xes_import.apply('logs/running-example.xes')
+# import pandas as pd
+# from pm4py.objects.log.util import dataframe_utils
+# from pm4py.objects.conversion.log import converter as log_converter
+#
+# log_csv = pd.read_csv('test-data/OR.csv', sep=',')
+# log_csv = dataframe_utils.convert_timestamp_columns_in_df(log_csv)
+# log_csv = log_csv.sort_values('time:timestamp')
+# # log = log_converter.apply(log_csv)
+# ptree = inductive_miner.apply_tree(log)
+#
+#
+# wf_model = pt_converter.apply(ptree)
+# p_finder = pattern_finder(wf_model)
+# print(p_finder.patterns_to_json())
+#
+#
+# gviz = wf_visualizer(wf_model)
+# model_path = 'models/' + 'test' + '.png'
+# gsave.save(gviz, model_path)
 
-log_csv = pd.read_csv('test-data/OR.csv', sep=',')
-log_csv = dataframe_utils.convert_timestamp_columns_in_df(log_csv)
-log_csv = log_csv.sort_values('time:timestamp')
-# log = log_converter.apply(log_csv)
-ptree = inductive_miner.apply_tree(log)
-
-from pm4py.visualization.process_tree import visualizer as pt_vis_factory
-
-wf_model = pt_converter.apply(ptree)
-p_finder = pattern_finder(wf_model)
-for pattern in p_finder.patterns_to_json():
-    print(pattern)
-
-
-# print(recreate_sequences(get_node_by_name('xor_2_split'), set()))
-# pattern_to_merge = 'parallel_1_split'
-# expand_inner_nodes(patterns[pattern_to_merge])
-# print(patterns[pattern_to_merge])
-gviz = wf_visualizer(wf_model)
-model_path = 'models/' + 'test' + '.png'
-gsave.save(gviz, model_path)
-# for node in wf_model.get_nodes():
-# print(find_pattern(node))
