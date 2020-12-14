@@ -1,16 +1,15 @@
 import create_wf_model as pt_converter
-from pm4py.objects.conversion.process_tree import converter as bpmn_converter
-from wf_pattern_visualizer import graphviz_visualization as wf_visualizer
-from bpmn_visualizer import graphviz_visualization as bpmn_visualizer
-from pm4py.algo.discovery.inductive import algorithm as inductive_miner
-from pm4py.visualization.petrinet import visualizer as pn_visualizer
-from pm4py.objects.log.importer.xes import importer as xes_import
-from pm4py.visualization.common import save as gsave
 import pandas as pd
-from pm4py.objects.log.util import dataframe_utils
-from pm4py.objects.conversion.log import converter as log_converter
-
+from bpmn_visualizer import graphviz_visualization as bpmn_visualizer
 from pattern_util import pattern_finder
+from pm4py.algo.discovery.inductive import algorithm as inductive_miner
+from pm4py.objects.conversion.log import converter as log_converter
+from pm4py.objects.conversion.process_tree import converter as bpmn_converter
+from pm4py.objects.log.importer.xes import importer as xes_import
+from pm4py.objects.log.util import dataframe_utils
+from pm4py.visualization.common import save as gsave
+from pm4py.visualization.petrinet import visualizer as pn_visualizer
+from wf_pattern_visualizer import graphviz_visualization as wf_visualizer
 
 
 def import_csv(file_path):
@@ -97,6 +96,7 @@ def discover_bpmn_model(log_path, model_name):
     model_path = 'model/' + model_name + '.png'
     gsave.save(gviz, model_path)
     return model_path
+
 
 def discover_patterns(log_path, model_name):
     """

@@ -1,12 +1,12 @@
-from wf_graph import WF
-import create_wf_model as pt_converter
-from wf_pattern_visualizer import graphviz_visualization as wf_visualizer
-from pm4py.algo.discovery.inductive import algorithm as inductive_miner
+import json
 
+import create_wf_model as pt_converter
+from create_wf_model import change_and_xor_to_or, merge_split_join
+from pm4py.algo.discovery.inductive import algorithm as inductive_miner
 from pm4py.objects.log.importer.xes import importer as xes_import
 from pm4py.visualization.common import save as gsave
-import json
-from create_wf_model import change_and_xor_to_or
+from wf_graph import WF
+from wf_pattern_visualizer import graphviz_visualization as wf_visualizer
 
 
 class pattern_finder:
@@ -15,9 +15,9 @@ class pattern_finder:
         self.patterns = {}
         self.discover_patterns()
         self.make_ors()
+        self.merge_join('xor_2_split')
         self.patterns = {}
         self.discover_patterns()
-
 
     def create_pattern(self, name, incoming_nodes, outgoing_nodes, partner, inner_nodes, is_loop=False, is_or=False):
         """This function creates a pattern object that can then be easily uses as JSON object
@@ -51,7 +51,6 @@ class pattern_finder:
         }
         self.patterns[name] = pattern
         return pattern
-
 
     def find_split_join_pattern(self, node, end):
         out_arcs = node.get_out_arcs()
@@ -103,7 +102,6 @@ class pattern_finder:
 
         return []
 
-
     def find_join_for_XOR_Split(self, node, openSplits):
         out_arcs = node.get_out_arcs()
         if isinstance(node, WF.ExclusiveGateway):
@@ -124,8 +122,7 @@ class pattern_finder:
                 isLoop = True
         return join_node, isLoop
 
-
-    def find_join_for_And_Split(self,node, openSplits):
+    def find_join_for_And_Split(self, node, openSplits):
         out_arcs = node.get_out_arcs()
         if isinstance(node, WF.ParallelGateway):
             if node.get_name().endswith('split'):
@@ -140,8 +137,7 @@ class pattern_finder:
             return x_join
         return None
 
-
-    def find_join_for_Or_Split(self,node, openSplits):
+    def find_join_for_Or_Split(self, node, openSplits):
         out_arcs = node.get_out_arcs()
         if isinstance(node, WF.InclusiveGateway):
             if node.get_name().endswith('split'):
@@ -156,7 +152,6 @@ class pattern_finder:
             return x_join
         return None
 
-
     def check_patterns_for_or(self):
         for pattern in self.patterns:
             pattern = self.patterns[pattern]
@@ -166,7 +161,8 @@ class pattern_finder:
                     if node in self.patterns:
                         node = self.patterns[node]
                         targets = [arc.get_target() for arc in self.get_node_by_name(node['partner']).get_out_arcs()]
-                        if not node['name'].startswith('xor') or len(node['inner_nodes']) > 1 or targets[0].get_name() != pattern['partner']:
+                        if not node['name'].startswith('xor') or len(node['inner_nodes']) > 1 or targets[
+                            0].get_name() != pattern['partner']:
                             is_or = False
                             break
                     else:
@@ -174,8 +170,7 @@ class pattern_finder:
                         break
                 pattern['is_or'] = is_or
 
-
-    def recreate_sequences(self,node, seen):
+    def recreate_sequences(self, node, seen):
         if (node not in seen):
             sequence = self.find_split_join_pattern(node, None)
 
@@ -198,10 +193,10 @@ class pattern_finder:
             return sequence
         return []
 
-
-    def expand_inner_nodes(self,pattern):
+    def expand_inner_nodes(self, pattern):
         found = True
         seen = []
+        nodes = []
         while found:
             found = False
             for node in pattern['inner_nodes']:
@@ -212,7 +207,9 @@ class pattern_finder:
                     pattern['inner_nodes'].append(self.patterns[node]['partner'])
                     found = True
         pattern['inner_nodes'].extend(seen)
-
+        for nname in pattern['inner_nodes']:
+            nodes.append(self.get_node_by_name(nname))
+        return nodes
 
     def get_node_by_name(self, name):
         for node in self.wf_model.get_nodes():
@@ -220,12 +217,10 @@ class pattern_finder:
                 return node
         return None
 
-
     def make_ors(self):
         for pattern in self.patterns:
             pattern = self.patterns[pattern]
             if pattern['is_or']:
-                inner_nodes = []
                 and_split_node = self.get_node_by_name(pattern['name'])
                 and_join_node = self.get_node_by_name(pattern['partner'])
                 xors = []
@@ -234,7 +229,6 @@ class pattern_finder:
                     xors.append((node, self.get_node_by_name(self.patterns[node.get_name()]['partner'])))
 
                 change_and_xor_to_or(self.wf_model, and_split_node, and_join_node, xors)
-
 
     def discover_patterns(self):
         for node in self.wf_model.get_nodes():
@@ -247,6 +241,12 @@ class pattern_finder:
             if isinstance(node, WF.StartEvent):
                 print(self.recreate_sequences(node, set()))
 
+    def merge_join(self, pattern_name):
+        merge_split_join(self.wf_model, self.get_node_by_name(pattern_name),
+                         self.get_node_by_name(self.patterns[pattern_name]['partner']),
+                         self.expand_inner_nodes(self.patterns[pattern_name]))
+        self.patterns = {}
+        self.discover_patterns()
 
     def patterns_to_json(self):
         patterns_list = []
@@ -314,21 +314,17 @@ class pattern_finder:
 log = xes_import.apply('logs/running-example.xes')
 import pandas as pd
 from pm4py.objects.log.util import dataframe_utils
-from pm4py.objects.conversion.log import converter as log_converter
 
-log_csv = pd.read_csv('test-data/OR_fail.csv', sep=',')
+log_csv = pd.read_csv('test-data/OR2.csv', sep=',')
 log_csv = dataframe_utils.convert_timestamp_columns_in_df(log_csv)
 log_csv = log_csv.sort_values('time:timestamp')
-log = log_converter.apply(log_csv)
+# log = log_converter.apply(log_csv)
 ptree = inductive_miner.apply_tree(log)
-
 
 wf_model = pt_converter.apply(ptree)
 p_finder = pattern_finder(wf_model)
 print(p_finder.patterns_to_json())
 
-
 gviz = wf_visualizer(wf_model)
 model_path = 'models/' + 'test' + '.png'
 gsave.save(gviz, model_path)
-

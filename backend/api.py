@@ -18,7 +18,7 @@ def upload_event_log():
     if request.method == 'POST':
         if request.files:
             event_log = request.files['files']
-            log_path = 'logs/'+event_log.filename
+            log_path = 'logs/' + event_log.filename
             print(event_log)
             print(log_path)
             event_log.save(log_path)
