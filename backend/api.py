@@ -9,7 +9,7 @@ app.config["DEBUG"] = True
 @app.route('/event-log-upload', methods=['POST'])
 def upload_event_log():
     """
-    Gets an event log, discovers the specified model and returns the image representation
+    Gets an event log, discovers the specified models and returns the image representation
     """
     print(request.values['model'])
     log_path = None
@@ -18,13 +18,17 @@ def upload_event_log():
     if request.method == 'POST':
         if request.files:
             event_log = request.files['files']
-            log_path = 'logs/'+event_log.filename
+            log_path = 'logs/' + event_log.filename
+            print(event_log)
+            print(log_path)
             event_log.save(log_path)
     model_name = request.values['model']
     if model_name == 'workflow':
         model_path = discover_wf_model(log_path, model_name)
+        return send_file(model_path, mimetype='image/png')
     elif model_name == 'bpmn':
         model_path = discover_bpmn_model(log_path, model_name)
+        return send_file(model_path, mimetype='image/png')
     elif model_name == 'pn':
         model_path = discover_pn_model(log_path, model_name)
-    return send_file(model_path, mimetype='image/png')
+        return send_file(model_path, mimetype='image/png')

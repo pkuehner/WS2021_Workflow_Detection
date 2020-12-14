@@ -15,6 +15,8 @@ def uploadEventLog(log_path, image_name):
     """
     url = base_url + "/event-log-upload"
     print("Uploading Event log")
+    print(url)
+    print(image_name)
     event_log = open(log_path, "rb")
     upload_file = {"files": event_log}
     data = {'model': image_name}

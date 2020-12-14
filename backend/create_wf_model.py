@@ -1,4 +1,5 @@
 import copy
+
 from pm4py.objects.process_tree.pt_operator import Operator
 
 
@@ -88,6 +89,112 @@ def add_parallel_gateway(wf, counts):
     return wf, split, join, counts
 
 
+def change_and_xor_to_or(wf, and_split, and_join, xors):
+    from wf_graph import WF
+    split_name = "or_split"
+    join_name = "or_join"
+
+    flows_in = []
+    flows_out = []
+    flows_to_remove = []
+    for flow in wf.get_flows():
+        if flow.get_target() == and_split:
+            flows_in.append(flow.get_source())
+            flows_to_remove.append(flow)
+        elif flow.get_source() == and_join:
+            flows_out.append(flow.get_target())
+            flows_to_remove.append(flow)
+        elif flow.get_source() == and_split:
+            flows_to_remove.append(flow)
+        elif flow.get_target() == and_join:
+            flows_to_remove.append(flow)
+
+    xor_out = []
+    xor_in = []
+    for (xor_split, xor_join) in xors:
+        for flow in wf.get_flows():
+            if flow.get_source() == xor_split:
+                if flow.get_target() != xor_join:
+                    xor_out.append(flow.get_target())
+                flows_to_remove.append(flow)
+            elif flow.get_target() == xor_join:
+                if flow.get_source() != xor_split:
+                    xor_in.append(flow.get_source())
+                flows_to_remove.append(flow)
+
+    for flow in flows_to_remove:
+        wf.remove_flow(flow)
+    for (xor_split, xor_join) in xors:
+        wf.remove_node(xor_join)
+        wf.remove_node(xor_split)
+    wf.remove_node(and_split)
+    wf.remove_node(and_join)
+
+    split = WF.InclusiveGateway(name=split_name)
+    join = WF.InclusiveGateway(name=join_name)
+    wf.add_node(split)
+    wf.add_node(join)
+
+    for nodes in flows_in:
+        wf.add_flow(WF.Flow(nodes, split))
+
+    for nodes in flows_out:
+        wf.add_flow(WF.Flow(join, nodes))
+
+    for nodes in xor_in:
+        wf.add_flow(WF.Flow(nodes, join))
+
+    for nodes in xor_out:
+        wf.add_flow(WF.Flow(split, nodes))
+
+    return wf
+
+
+def merge_split_join(wf, split, join, inner_nodes):
+    from wf_graph import WF
+    node_name = 'merged_join'
+    flows_in = []
+    flows_out = []
+    flows_to_remove = []
+    for flow in wf.get_flows():
+        if flow.get_target() == split:
+            flows_in.append(flow.get_source())
+            flows_to_remove.append(flow)
+        elif flow.get_source() == join:
+            flows_out.append(flow.get_target())
+            flows_to_remove.append(flow)
+        elif flow.get_source() == split:
+            flows_to_remove.append(flow)
+        elif flow.get_target() == join:
+            flows_to_remove.append(flow)
+        if flow.get_source() in inner_nodes:
+            flows_to_remove.append(flow)
+            wf.remove_node(flow.get_source())
+        if flow.get_target() in inner_nodes:
+            flows_to_remove.append(flow)
+            wf.remove_node(flow.get_target())
+
+    for flow in flows_to_remove:
+        try:
+            wf.remove_flow(flow)
+        except:
+            pass
+
+    wf.remove_node(split)
+    wf.remove_node(join)
+
+    node = WF.Task(name=node_name)
+    wf.add_node(node)
+
+    for nodes in flows_in:
+        wf.add_flow(WF.Flow(nodes, node))
+
+    for nodes in flows_out:
+        wf.add_flow(WF.Flow(node, nodes))
+
+    return wf
+
+
 def recursively_add_tree(parent_tree, tree, wf, initial_event, final_event, counts, rec_depth):
     from wf_graph import WF
     tree_childs = [child for child in tree.children]
@@ -112,7 +219,8 @@ def recursively_add_tree(parent_tree, tree, wf, initial_event, final_event, coun
     elif tree.operator == Operator.XOR:
         wf, split_gateway, join_gateway, counts = add_xor_gateway(wf, counts)
         for subtree in tree_childs:
-            wf, counts, x, y = recursively_add_tree(tree, subtree, wf, split_gateway, join_gateway, counts, rec_depth + 1)
+            wf, counts, x, y = recursively_add_tree(tree, subtree, wf, split_gateway, join_gateway, counts,
+                                                    rec_depth + 1)
         wf.add_flow(WF.Flow(initial_event, split_gateway))
         wf.add_flow(WF.Flow(join_gateway, final_event))
         initial_connector = split_gateway
@@ -121,7 +229,8 @@ def recursively_add_tree(parent_tree, tree, wf, initial_event, final_event, coun
     elif tree.operator == Operator.PARALLEL:
         wf, split_gateway, join_gateway, counts = add_parallel_gateway(wf, counts)
         for subtree in tree_childs:
-            wf, counts, x, y = recursively_add_tree(tree, subtree, wf, split_gateway, join_gateway, counts, rec_depth + 1)
+            wf, counts, x, y = recursively_add_tree(tree, subtree, wf, split_gateway, join_gateway, counts,
+                                                    rec_depth + 1)
         wf.add_flow(WF.Flow(initial_event, split_gateway))
         wf.add_flow(WF.Flow(join_gateway, final_event))
         initial_connector = split_gateway
@@ -131,7 +240,10 @@ def recursively_add_tree(parent_tree, tree, wf, initial_event, final_event, coun
         initial_intermediate_task = initial_event
         wf, final_intermediate_task, counts = add_tau_task(wf, counts)
         for i in range(len(tree_childs)):
-            wf, counts, initial_connect, final_connect = recursively_add_tree(tree, tree_childs[i], wf, initial_intermediate_task, final_intermediate_task, counts, rec_depth + 1)
+            wf, counts, initial_connect, final_connect = recursively_add_tree(tree, tree_childs[i], wf,
+                                                                              initial_intermediate_task,
+                                                                              final_intermediate_task, counts,
+                                                                              rec_depth + 1)
             initial_intermediate_task = final_connect
             if i == 0:
                 initial_connector = initial_connect
@@ -185,7 +297,7 @@ def delete_tau_transitions(wf, counts):
 
 def apply(tree, parameters=None):
     """
-    Converts the process tree into a WF Pattern model
+    Converts the process tree into a WF Pattern models
     Parameters
     --------------
     tree
