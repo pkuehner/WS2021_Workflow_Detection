@@ -15,7 +15,7 @@ class pattern_finder:
         self.patterns = {}
         self.discover_patterns()
         self.make_ors()
-        patterns_ = {}
+        self.patterns = {}
         self.discover_patterns()
 
 
@@ -165,7 +165,8 @@ class pattern_finder:
                 for node in pattern['inner_nodes']:
                     if node in self.patterns:
                         node = self.patterns[node]
-                        if not node['name'].startswith('xor') or len(node['inner_nodes']) > 1:
+                        targets = [arc.get_target() for arc in self.get_node_by_name(node['partner']).get_out_arcs()]
+                        if not node['name'].startswith('xor') or len(node['inner_nodes']) > 1 or targets[0].get_name() != pattern['partner']:
                             is_or = False
                             break
                     else:
@@ -217,6 +218,7 @@ class pattern_finder:
         for node in self.wf_model.get_nodes():
             if node.get_name() == name:
                 return node
+        return None
 
 
     def make_ors(self):
@@ -309,24 +311,24 @@ class pattern_finder:
         return json.dumps(patterns_list)
 
 
-# log = xes_import.apply('logs/running-example.xes')
-# import pandas as pd
-# from pm4py.objects.log.util import dataframe_utils
-# from pm4py.objects.conversion.log import converter as log_converter
-#
-# log_csv = pd.read_csv('test-data/OR.csv', sep=',')
-# log_csv = dataframe_utils.convert_timestamp_columns_in_df(log_csv)
-# log_csv = log_csv.sort_values('time:timestamp')
-# # log = log_converter.apply(log_csv)
-# ptree = inductive_miner.apply_tree(log)
-#
-#
-# wf_model = pt_converter.apply(ptree)
-# p_finder = pattern_finder(wf_model)
-# print(p_finder.patterns_to_json())
-#
-#
-# gviz = wf_visualizer(wf_model)
-# model_path = 'models/' + 'test' + '.png'
-# gsave.save(gviz, model_path)
+log = xes_import.apply('logs/running-example.xes')
+import pandas as pd
+from pm4py.objects.log.util import dataframe_utils
+from pm4py.objects.conversion.log import converter as log_converter
+
+log_csv = pd.read_csv('test-data/OR_fail.csv', sep=',')
+log_csv = dataframe_utils.convert_timestamp_columns_in_df(log_csv)
+log_csv = log_csv.sort_values('time:timestamp')
+log = log_converter.apply(log_csv)
+ptree = inductive_miner.apply_tree(log)
+
+
+wf_model = pt_converter.apply(ptree)
+p_finder = pattern_finder(wf_model)
+print(p_finder.patterns_to_json())
+
+
+gviz = wf_visualizer(wf_model)
+model_path = 'models/' + 'test' + '.png'
+gsave.save(gviz, model_path)
 
