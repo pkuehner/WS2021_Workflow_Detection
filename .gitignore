@@ -129,3 +129,7 @@ dmypy.json
 .pyre/
 frontend/logs/
 .vscode/
+backend/models/*.png
+frontend/detection/static/detection/models/*.png
+backend/logs/*.csv
+backend/logs/*.xes
