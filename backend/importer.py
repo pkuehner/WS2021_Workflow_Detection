@@ -70,4 +70,4 @@ def import_file(path, filter=True):
         return import_xes(path, filter)
     else:
         print('Error: Please choose XES or CSV file.')
-        sys.exit(0)
+        raise ValueError('File not valid')

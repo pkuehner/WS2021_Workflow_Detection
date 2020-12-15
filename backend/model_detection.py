@@ -1,4 +1,4 @@
-import create_wf_model as pt_converter
+import create_wf_model  as pt_converter
 from pattern_util import pattern_finder
 from importer import import_file
 from pm4py.algo.discovery.inductive import algorithm as inductive_miner
@@ -9,7 +9,7 @@ from pm4py.visualization.bpmn import visualizer as bpmn_visualizer
 from wf_pattern_visualizer import graphviz_visualization as wf_visualizer
 
 
-def discover_wf_model(log_path, model_name):
+def discover_wf_model(log_path, model_name, patterns_to_merge = None):
     """
     Discover the workflow pattern inside an event log
     Parameters
@@ -27,7 +27,9 @@ def discover_wf_model(log_path, model_name):
     ptree = inductive_miner.apply_tree(log)
     wf_model = pt_converter.apply(ptree)
     p_finder = pattern_finder(wf_model)
-    gviz = wf_visualizer(wf_model, loop_nodes = p_finder.get_loops())
+    if patterns_to_merge:
+        p_finder.merge_join(patterns_to_merge)
+    gviz = wf_visualizer(p_finder.wf_model, loop_nodes = p_finder.get_loops())
     model_path = 'models/' + model_name + '.png'
     gsave.save(gviz, model_path)
     return model_path
@@ -78,15 +80,15 @@ def discover_bpmn_model(log_path, model_name):
     return model_path
 
 
-def discover_patterns(log_path, model_name):
+def discover_patterns(log_path, pattern_id = None):
     """
     Discover the patterns for an event log
     Parameters
     --------------
     log_path
         path to the event log
-    model_name
-        name of the model
+    pattern_id
+        ids of the pattern that should be merged
     Returns
     --------------
     patterns_as_json
@@ -95,4 +97,6 @@ def discover_patterns(log_path, model_name):
     ptree = inductive_miner.apply_tree(log)
     wf_model = pt_converter.apply(ptree)
     p_finder = pattern_finder(wf_model)
+    if pattern_id:
+        p_finder.merge_join(pattern_id)
     return p_finder.patterns_to_json()
