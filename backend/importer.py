@@ -59,7 +59,7 @@ def remove_uncomplete_traces(event_log):
 
 def import_file(path, filter=True):
     filename, file_extension = os.path.splitext(path)
-    file_extension = os.path.splitext(filename)[1]
+    # file_extension = os.path.splitext(filename)[1]
     if file_extension == ".csv":
         print('Importing CSV File ' + filename + '...')
         print('Filter is set: ' + str(filter))
