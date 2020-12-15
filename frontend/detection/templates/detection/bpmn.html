@@ -1,0 +1,17 @@
+{% extends 'detection/navigation.html' %}
+{% load static %}
+
+{% block image_model %}
+
+<div class="row">
+    <div class="container full" style="text-align: center;">
+        {% if show_model %}
+        <img id="imagemodel" src="{% static 'detection/models/bpmn.png' %}" class="responsive" alt="Model">
+        {% endif %}
+        
+        <div id="spinner" style="display: none" class="loader"></div>
+    </div>
+</div>
+
+
+{% endblock %}

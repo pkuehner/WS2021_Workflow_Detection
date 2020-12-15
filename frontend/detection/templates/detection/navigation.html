@@ -1,0 +1,30 @@
+{% extends 'detection/index.html' %}
+
+{% block model_representation %}
+
+<input type="hidden" id="modelName" name="variable" value="{{ model_name }}">
+
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="row" style="margin: 10px;">
+        <div class="quarter"></div>
+        <div class="row half">
+            <div class="quarter">
+                <button type="submit" id="workflow" name ="workflow" class="theme tab firstTab" onclick="uploadFile();">Workflow Model</button>
+            </div>
+            <div class="quarter middleTab">
+                <button type="submit" id="bpmn" name ="bpmn" class="theme tab" onclick="uploadFile();">BPMN Model</button>
+            </div>
+            <div class="quarter">
+                <button type="submit" id="pn" name ="pn" class="theme tab lastTab" onclick="uploadFile();">Petri Net</button>
+            </div>
+        </div>
+        
+        <div class="quarter"></div>
+    </div>
+</form>
+
+{% block image_model %}
+{% endblock %}
+
+{% endblock %}

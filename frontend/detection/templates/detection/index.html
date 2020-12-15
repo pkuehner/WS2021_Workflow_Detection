@@ -14,69 +14,22 @@
 </div>
 
 <div class="row">
-    <div class="three-quarter">
-        <form method="POST" enctype="multipart/form-data">
-            {% csrf_token %}
-            <div class="row" style="margin: 10px;">
-                <div class="quarter"></div>
-                <div class="row half">
-                    <div class="third">
-                        <button type="submit" name ="workflow" class="theme" onclick="uploadFile();">Workflow Model</button>
-                    </div>
-                    <div class="third">
-                        <button type="submit" name ="bpmn" class="theme" onclick="uploadFile();">BPMN Model</button>
-                    </div>
-                    <div class="third">
-                        <button type="submit" name ="pn" class="theme" onclick="uploadFile();">Petri Net</button>
-                    </div>
-                </div>
-                
-                <div class="quarter"></div>
-            </div>
-        </form>
-        <div class="row">
-            <div class="container full">
-                {% if show_model %}
-                {% with 'detection/models/'|add:model_name|add:'.png' as model_image %}
-                <img id="imagemodel" src="{% static model_image %}" class="responsive" alt="Model">
-                {% endwith %}
-                {% endif %}
-                <div id="spinner" style="display: none" class="loader"></div>
-            </div>
-        </div>
+    <div class="three-quarter" style="text-align: center;">
+        {% block model_representation %}
+        <span style="font-size: 2em;">Please select an event log</span>
+        <div id="spinner" style="display: none" class="loader"></div>
+        {% endblock %}
     </div>
     <div class="quarter column container">
         <div class="container">
             <form method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
-                <label class="checkbox theme">Sequence
-                    <input id="Sequence" name ="sequence" type="checkbox">
-                    <span class="checkmark"></span>
-                </label>
-                <label class="checkbox theme">Parallel Split (sync)
-                    <input id="ParallelSplitSync" name ="parallelsync" type="checkbox">
-                    <span class="checkmark"></span>
-                </label>
-                <label class="checkbox theme">Parallel Split
-                    <input id="ParallelSplit" name ="parallel" type="checkbox">
-                    <span class="checkmark"></span>
-                </label>
-                <label class="checkbox theme">Exclusive Choice
-                    <input id="ExclusiveChoice" name ="exclusive" type="checkbox">
-                    <span class="checkmark"></span>
-                </label>
-                <label class="checkbox theme">Multi Choice (sync)
-                    <input id="MultiChoiceSync" name ="multisync" type="checkbox">
-                    <span class="checkmark"></span>
-                </label>
-                <label class="checkbox theme" >Multi Choice
-                    <input id="MultiChoice" name ="multi" type="checkbox">
-                    <span class="checkmark"></span>
-                </label>
-                <label class="checkbox theme last">Loop
-                    <input id="Loop" name ="loop" type="checkbox">
-                    <span class="checkmark"></span>
-                </label>
+                {% for pattern in patterns %}
+                    <label class="checkbox theme">{{ pattern.pattern_type }} : {{ pattern.pattern_node }}
+                        <input id="{{ pattern.pattern_node }}" name="{{ pattern.pattern_node }}" type="checkbox">
+                        <span class="checkmark"></span>
+                    </label>
+                {% endfor %}
                 <br/>
                 <button type="submit" name ="aggregate-pattern" class="theme"><i class="fa fa-filter"></i> Aggregate Pattern</button>
             </form>
@@ -102,7 +55,7 @@
             <div class="row">
                 <div class="full">
                     {% with 'detection/models/'|add:model_name|add:'.png' as model_image %}
-                    <a class="theme download" href="{% static model_image %}" download>
+                    <a class="theme download export" href="{% static model_image %}" download>
                         <i class="fa fa-download"></i> Export Model 
                     </a>
                     {% endwith %}
