@@ -15,7 +15,7 @@ class pattern_finder:
         self.patterns = {}
         self.discover_patterns()
         self.make_ors()
-        self.merge_join('xor_2_split')
+        #self.merge_join('xor_2_split')
         self.patterns = {}
         self.discover_patterns()
 
@@ -248,6 +248,14 @@ class pattern_finder:
         self.patterns = {}
         self.discover_patterns()
 
+    def get_loops(self):
+        loop_nodes = []
+        for pattern_name in self.patterns:
+            pattern = self.patterns[pattern_name]
+            if pattern['isLoop']:
+                loop_nodes.extend([pattern_name, pattern['partner']])
+        return loop_nodes
+
     def patterns_to_json(self):
         patterns_list = []
         seen = set()
@@ -311,20 +319,20 @@ class pattern_finder:
         return json.dumps(patterns_list)
 
 
-log = xes_import.apply('logs/running-example.xes')
-import pandas as pd
-from pm4py.objects.log.util import dataframe_utils
-
-log_csv = pd.read_csv('test-data/OR2.csv', sep=',')
-log_csv = dataframe_utils.convert_timestamp_columns_in_df(log_csv)
-log_csv = log_csv.sort_values('time:timestamp')
-# log = log_converter.apply(log_csv)
-ptree = inductive_miner.apply_tree(log)
-
-wf_model = pt_converter.apply(ptree)
-p_finder = pattern_finder(wf_model)
-print(p_finder.patterns_to_json())
-
-gviz = wf_visualizer(wf_model)
-model_path = 'models/' + 'test' + '.png'
-gsave.save(gviz, model_path)
+# log = xes_import.apply('logs/running-example.xes')
+# import pandas as pd
+# from pm4py.objects.log.util import dataframe_utils
+#
+# log_csv = pd.read_csv('test-data/OR2.csv', sep=',')
+# log_csv = dataframe_utils.convert_timestamp_columns_in_df(log_csv)
+# log_csv = log_csv.sort_values('time:timestamp')
+# # log = log_converter.apply(log_csv)
+# ptree = inductive_miner.apply_tree(log)
+#
+# wf_model = pt_converter.apply(ptree)
+# p_finder = pattern_finder(wf_model)
+# print(p_finder.patterns_to_json())
+#
+# gviz = wf_visualizer(wf_model)
+# model_path = 'models/' + 'test' + '.png'
+# gsave.save(gviz, model_path)

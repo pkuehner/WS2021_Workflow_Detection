@@ -26,7 +26,8 @@ def discover_wf_model(log_path, model_name):
     log = import_file(log_path, False)
     ptree = inductive_miner.apply_tree(log)
     wf_model = pt_converter.apply(ptree)
-    gviz = wf_visualizer(wf_model)
+    p_finder = pattern_finder(wf_model)
+    gviz = wf_visualizer(wf_model, loop_nodes = p_finder.get_loops())
     model_path = 'models/' + model_name + '.png'
     gsave.save(gviz, model_path)
     return model_path
