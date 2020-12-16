@@ -25,10 +25,12 @@
             <form method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
                 {% for pattern in patterns %}
+                    {% if pattern.pattern_type == "XOR Split" or pattern.pattern_type == "OR Split" or pattern.pattern_type == "AND Split" %}
                     <label class="checkbox theme">{{ pattern.pattern_type }} : {{ pattern.pattern_node }}
                         <input id="{{ pattern.pattern_node }}" name="{{ pattern.pattern_node }}" type="checkbox">
                         <span class="checkmark"></span>
                     </label>
+                    {% endif %}
                 {% endfor %}
                 <br/>
                 <button type="submit" name ="aggregate-pattern" class="theme"><i class="fa fa-filter"></i> Aggregate Pattern</button>

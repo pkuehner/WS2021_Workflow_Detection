@@ -32,12 +32,12 @@ def graphviz_visualization(wf_model, pattern_to_merge=[], loop_nodes=[]):
             viz.node(node.get_id(), "End", style='filled', shape='circle', fillcolor='orange')
         elif isinstance(node, WF.ExclusiveGateway):
             if node.get_name().endswith('split'):
-                name = 'OR-Split'
+                name = 'XOR-Split'
                 if node.get_name() in loop_nodes:
                     name = 'LOOP-End'
                 viz.node(node.get_id(), name, style='filled', shape='diamond')
             else:
-                name = 'OR-Join'
+                name = 'XOR-Join'
                 if node.get_name() in loop_nodes:
                     name = 'LOOP-Start'
                 viz.node(node.get_id(), name, style='filled', shape='diamond')
