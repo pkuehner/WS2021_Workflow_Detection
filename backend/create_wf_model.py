@@ -167,10 +167,10 @@ def merge_split_join(wf, split, join, inner_nodes):
             flows_to_remove.append(flow)
         elif flow.get_target() == join:
             flows_to_remove.append(flow)
-        if flow.get_source() in inner_nodes:
+        if flow.get_source().get_name() in inner_nodes:
             flows_to_remove.append(flow)
             wf.remove_node(flow.get_source())
-        if flow.get_target() in inner_nodes:
+        if flow.get_target().get_name() in inner_nodes:
             flows_to_remove.append(flow)
             wf.remove_node(flow.get_target())
 

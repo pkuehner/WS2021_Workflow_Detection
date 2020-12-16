@@ -15,7 +15,6 @@ class pattern_finder:
         self.patterns = {}
         self.discover_patterns()
         self.make_ors()
-        #self.merge_join('xor_2_split')
         self.patterns = {}
         self.discover_patterns()
 
@@ -197,19 +196,24 @@ class pattern_finder:
         found = True
         seen = []
         nodes = []
+        currentNodes = [self.get_node_by_name(pattern)]
         while found:
             found = False
-            for node in pattern['inner_nodes']:
-                if node in self.patterns:
-                    pattern['inner_nodes'].remove(node)
-                    seen.append(node)
-                    pattern['inner_nodes'].extend(self.patterns[node]['inner_nodes'])
-                    pattern['inner_nodes'].append(self.patterns[node]['partner'])
-                    found = True
-        pattern['inner_nodes'].extend(seen)
-        for nname in pattern['inner_nodes']:
-            nodes.append(self.get_node_by_name(nname))
-        return nodes
+            c2 = currentNodes[:]
+            for node in c2:
+                if node not in seen:
+                    currentNodes.remove(node)
+                    if node.get_name() != self.patterns[pattern]['partner']:
+                        for arc in node.get_out_arcs():
+                            currentNodes.append(arc.get_target())
+                        seen.append(node)
+                        nodes.append(node)
+                        found = True
+        nodes.remove(self.get_node_by_name(pattern))
+        nnames = []
+        for node in nodes:
+            nnames.append(node.get_name())
+        return nnames
 
     def get_node_by_name(self, name):
         for node in self.wf_model.get_nodes():
@@ -244,7 +248,7 @@ class pattern_finder:
     def merge_join(self, pattern_name):
         merge_split_join(self.wf_model, self.get_node_by_name(pattern_name),
                          self.get_node_by_name(self.patterns[pattern_name]['partner']),
-                         self.expand_inner_nodes(self.patterns[pattern_name]))
+                         self.expand_inner_nodes(pattern_name))
         self.patterns = {}
         self.discover_patterns()
 
@@ -322,11 +326,12 @@ class pattern_finder:
 # log = xes_import.apply('logs/running-example.xes')
 # import pandas as pd
 # from pm4py.objects.log.util import dataframe_utils
+# from pm4py.objects.conversion.log import converter as log_converter
 #
-# log_csv = pd.read_csv('test-data/OR2.csv', sep=',')
+# log_csv = pd.read_csv('test-data/OR_fail.csv', sep=',')
 # log_csv = dataframe_utils.convert_timestamp_columns_in_df(log_csv)
 # log_csv = log_csv.sort_values('time:timestamp')
-# # log = log_converter.apply(log_csv)
+# #log = log_converter.apply(log_csv)
 # ptree = inductive_miner.apply_tree(log)
 #
 # wf_model = pt_converter.apply(ptree)
