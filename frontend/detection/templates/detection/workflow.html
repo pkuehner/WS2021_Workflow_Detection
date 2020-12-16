@@ -13,7 +13,27 @@
         {% if show_model %}
         <img id="imagemodel" src="{% static 'detection/models/workflow.png' %}" class="responsive" alt="Model">
         {% endif %}
-        
+        {% block content %}
+        <h1>Patterns</h1>
+        {% if patterns %}
+        <table>
+            <tr>
+                <th>Pattern Type</th>
+                <th>Pattern Node</th>
+                <th>Incoming Nodes</th>
+                <th>Outgoing Nodes</th>
+            </tr>
+            {% for pattern in patterns %}
+            <tr>
+                <td>{{ pattern.pattern_type }}</td>
+                <td>{{ pattern.pattern_node }}</td>
+                <td>{{ pattern.incoming_nodes }}</td>
+                <td>{{ pattern.outgoing_nodes }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% endif %}
+        {% endblock %}
         <div id="spinner" style="display: none" class="loader"></div>
     </div>
 </div>

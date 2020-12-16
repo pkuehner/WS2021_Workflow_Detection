@@ -32,25 +32,25 @@ def graphviz_visualization(wf_model, pattern_to_merge=[], loop_nodes=[]):
             viz.node(node.get_id(), "End", style='filled', shape='circle', fillcolor='orange')
         elif isinstance(node, WF.ExclusiveGateway):
             if node.get_name().endswith('split'):
-                name = 'XOR-Split'
+                name = 'XOR-Split \n'+node.get_name()
                 if node.get_name() in loop_nodes:
-                    name = 'LOOP-End'
+                    name = 'LOOP-End \n'+node.get_name()
                 viz.node(node.get_id(), name, style='filled', shape='diamond')
             else:
-                name = 'XOR-Join'
+                name = 'XOR-Join \n'+node.get_name()
                 if node.get_name() in loop_nodes:
-                    name = 'LOOP-Start'
+                    name = 'LOOP-Start \n'+node.get_name()
                 viz.node(node.get_id(), name, style='filled', shape='diamond')
         elif isinstance(node, WF.ParallelGateway):
             if node.get_name().endswith('split'):
-                viz.node(node.get_id(), "AND-Split", style='filled', shape='diamond')
+                viz.node(node.get_id(), "AND-Split \n"+node.get_name(), style='filled', shape='diamond')
             else:
-                viz.node(node.get_id(), "AND-Join", style='filled', shape='diamond')
+                viz.node(node.get_id(), "AND-Join \n"+node.get_name(), style='filled', shape='diamond')
         elif isinstance(node, WF.InclusiveGateway):
             if node.get_name().endswith('split'):
-                viz.node(node.get_id(), "OR-Split", style='filled', shape='diamond')
+                viz.node(node.get_id(), "OR-Split \n"+node.get_name(), style='filled', shape='diamond')
             else:
-                viz.node(node.get_id(), "OR-Join", style='filled', shape='diamond')
+                viz.node(node.get_id(), "OR-Join \n"+node.get_name(), style='filled', shape='diamond')
         else:
             viz.node(node.get_id(), node.get_name(), style='filled')
 
