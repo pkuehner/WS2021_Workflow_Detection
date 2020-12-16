@@ -52,6 +52,7 @@ def model_represenation_as_image():
     try:
         if model_name == 'workflow':
             if 'pattern_id' in request.values:
+                print('Patterns-to-merge:' + request.values['pattern_id'])
                 model_path = discover_wf_model(log_path, model_name, patterns_to_merge=request.values['pattern_id'])
             else:
                 model_path = discover_wf_model(log_path, model_name)

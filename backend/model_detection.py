@@ -7,6 +7,7 @@ from pm4py.visualization.common import save as gsave
 from pm4py.visualization.petrinet import visualizer as pn_vis
 from pm4py.visualization.bpmn import visualizer as bpmn_visualizer
 from wf_pattern_visualizer import graphviz_visualization as wf_visualizer
+import json
 
 
 def discover_wf_model(log_path, model_name, patterns_to_merge = None):
@@ -28,7 +29,11 @@ def discover_wf_model(log_path, model_name, patterns_to_merge = None):
     wf_model = pt_converter.apply(ptree)
     p_finder = pattern_finder(wf_model)
     if patterns_to_merge:
-        p_finder.merge_join(patterns_to_merge)
+        print(patterns_to_merge)
+        patterns_to_merge = json.loads(patterns_to_merge)
+        for pattern in patterns_to_merge:
+            print(pattern)
+            p_finder.merge_join(pattern)
     gviz = wf_visualizer(p_finder.wf_model, loop_nodes = p_finder.get_loops())
     model_path = 'models/' + model_name + '.png'
     gsave.save(gviz, model_path)

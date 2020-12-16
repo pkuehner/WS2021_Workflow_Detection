@@ -8,6 +8,8 @@ def send_log_to_backend(request, context, model_name, pattern_id = None):
     request.session['model_name'] = model_name
     if request.session.get('log_path', None):
         print(model_name)
+        if pattern_id:
+            pattern_id = json.dumps(pattern_id)
         result = discover_model_as_image(request.session['log_path'], model_name, pattern_id)
         if result:
             return redirect(model_name)
@@ -62,9 +64,10 @@ def handle_merge_request(request, context):
     if request.session.get('log_path', None):
         patterns_to_merge = []
         for item in request.POST:
+            print(item)
             if item.endswith('split') or item.endswith('join'):
                 patterns_to_merge.append(item)
-        return send_log_to_backend(request, context, 'workflow', patterns_to_merge[0])
+        return send_log_to_backend(request, context, 'workflow', patterns_to_merge)
     else:
         context['upload_error'] = 'No event log found!'
         return render(request, 'detection/index.html', context)
