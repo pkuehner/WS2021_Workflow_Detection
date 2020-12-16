@@ -241,10 +241,6 @@ class pattern_finder:
         self.check_patterns_for_or()
         print(self.patterns)
 
-        for node in self.wf_model.get_nodes():
-            if isinstance(node, WF.StartEvent):
-                print(self.recreate_sequences(node, set()))
-
     def merge_join(self, pattern_name):
         merge_split_join(self.wf_model, self.get_node_by_name(pattern_name),
                          self.get_node_by_name(self.patterns[pattern_name]['partner']),
