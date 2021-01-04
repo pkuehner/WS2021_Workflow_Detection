@@ -1,13 +1,7 @@
 import json
 
-import create_wf_model as pt_converter
 from create_wf_model import change_and_xor_to_or, merge_split_join, change_and_to_multi_merge
-from pm4py.algo.discovery.inductive import algorithm as inductive_miner
-from pm4py.visualization.common import save as gsave
 from wf_graph import WF
-from wf_pattern_visualizer import graphviz_visualization as wf_visualizer
-
-
 
 
 class pattern_finder:
@@ -19,8 +13,13 @@ class pattern_finder:
         self.make_multi_merges()
         self.rediscover_patterns()
 
-
     def rediscover_patterns(self):
+        """
+        Rediscovers patterns after something has changed
+        Returns
+        -------
+        object
+        """
         multi_merges = self.get_multi_merges()
         self.patterns = {}
         self.discover_patterns()
@@ -65,6 +64,17 @@ class pattern_finder:
         return pattern
 
     def find_split_join_pattern(self, node, end):
+        """
+        Finds split_join pattern that starts at node
+        Parameters
+        ----------
+        node : pattern start
+        end : pattern end
+
+        Returns
+        -------
+
+        """
         out_arcs = node.get_out_arcs()
         if isinstance(node, WF.ExclusiveGateway):
             if node.get_name() in self.patterns:
@@ -116,6 +126,12 @@ class pattern_finder:
         return []
 
     def find_join_for_XOR_Split(self, node, split_name, seen):
+        """
+                       Finds Join for XOR Split
+                       Returns join node name
+                       -------
+                       object
+                       """
         if node in seen:
             return None, True
         out_arcs = node.get_out_arcs()
@@ -140,6 +156,12 @@ class pattern_finder:
         return join_node, isLoop
 
     def find_join_for_And_Split(self, node, openSplits):
+        """
+                Finds Join for AND Split
+                Returns join node name
+                -------
+                object
+                """
         out_arcs = node.get_out_arcs()
         if isinstance(node, WF.ParallelGateway):
             if node.get_name().endswith('split'):
@@ -155,6 +177,12 @@ class pattern_finder:
         return None
 
     def find_join_for_Or_Split(self, node, openSplits):
+        """
+        Finds Join for Or Split
+        Returns join node name
+        -------
+        object
+        """
         out_arcs = node.get_out_arcs()
         if isinstance(node, WF.InclusiveGateway):
             if node.get_name().endswith('split'):
@@ -170,6 +198,12 @@ class pattern_finder:
         return None
 
     def check_patterns_for_or(self):
+        """
+               Checks if patterns for or and marks them
+               Returns
+               -------
+
+               """
         for pattern in self.patterns:
             pattern = self.patterns[pattern]
             if pattern['name'].startswith('parallel'):
@@ -188,6 +222,12 @@ class pattern_finder:
                 pattern['is_or'] = is_or
 
     def check_patterns_for_multi_merge(self):
+        """
+        Checks if patterns for multi merges and marks them
+        Returns
+        -------
+
+        """
         for pattern in self.patterns:
             pattern = self.patterns[pattern]
             if pattern['name'].startswith('parallel'):
@@ -237,6 +277,16 @@ class pattern_finder:
         return []
 
     def expand_inner_nodes(self, pattern):
+        """
+        Returns all inner nodes of a pattern (Nodes between join and split)
+        Parameters
+        ----------
+        pattern : name of split node of pattern
+
+        Returns
+        -------
+
+        """
         found = True
         seen = []
         nodes = []
@@ -260,12 +310,20 @@ class pattern_finder:
         return nnames
 
     def get_node_by_name(self, name):
+        """
+        Returns
+        -------
+        Node with given name
+        """
         for node in self.wf_model.get_nodes():
             if node.get_name() == name:
                 return node
         return None
 
     def make_ors(self):
+        """
+        Rewires And and Xor to or in wf_model
+        """
         or_count = 1
         for pattern in self.patterns:
             pattern = self.patterns[pattern]
@@ -278,9 +336,12 @@ class pattern_finder:
                     xors.append((node, self.get_node_by_name(self.patterns[node.get_name()]['partner'])))
 
                 change_and_xor_to_or(self.wf_model, and_split_node, and_join_node, xors, or_count)
-                or_count+= 1
+                or_count += 1
 
     def make_multi_merges(self):
+        """
+        Rewires the multi merges in wf_model
+        """
         for pattern in self.patterns:
             pattern = self.patterns[pattern]
             if pattern['is_multi_merge']:
@@ -291,6 +352,9 @@ class pattern_finder:
                 change_and_to_multi_merge(self.wf_model, and_split_node, and_join_node, loop_split_node, loop_join_node)
 
     def discover_patterns(self):
+        """
+        Discovers patterns and finds or and multi merges
+        """
         for node in self.wf_model.get_nodes():
             self.find_split_join_pattern(node, None)
 
@@ -299,6 +363,12 @@ class pattern_finder:
         print(self.patterns)
 
     def merge_join(self, pattern_name):
+        """
+        Merges join with pattern_name as split node
+        Parameters
+        ----------
+        pattern_name : Split node name of pattern to merge
+        """
         merge_split_join(self.wf_model, self.get_node_by_name(pattern_name),
                          self.get_node_by_name(self.patterns[pattern_name]['partner']),
                          self.expand_inner_nodes(pattern_name))
@@ -306,6 +376,12 @@ class pattern_finder:
         self.discover_patterns()
 
     def get_loops(self):
+        """
+
+        Returns node names of split and join xors that are indedd loops
+        -------
+
+        """
         loop_nodes = []
         for pattern_name in self.patterns:
             pattern = self.patterns[pattern_name]
@@ -314,6 +390,11 @@ class pattern_finder:
         return loop_nodes
 
     def get_multi_merges(self):
+        """
+        Returns List of And Join node names, which are multi merges
+        -------
+
+        """
         multi_merges = []
         for pattern_name in self.patterns:
             pattern = self.patterns[pattern_name]
@@ -322,9 +403,13 @@ class pattern_finder:
         return multi_merges
 
     def patterns_to_json(self):
+        """
+        Returns JSON Representation of Patterns
+        -------
+
+        """
         patterns_list = []
         seen = set()
-        seen.add('end')
         for pattern_name in self.patterns:
             for pattern in [pattern_name, self.patterns[pattern_name]['partner']]:
                 is_multi_merge = self.patterns[pattern_name]['is_multi_merge']
@@ -356,9 +441,9 @@ class pattern_finder:
                         pattern_type = 'Multi Merge'
 
                 if self.patterns[pattern_name]['isLoop'] and pattern.endswith('join'):
-                    pattern_type = 'Loop Join'
+                    pattern_type = 'Loop Start'
                 elif self.patterns[pattern_name]['isLoop'] and pattern.endswith('split'):
-                    pattern_type = 'Loop Split'
+                    pattern_type = 'Loop End'
                 pattern_as_json = {
                     'pattern_node': pattern,
                     'incoming_nodes': incoming_nodes,
@@ -388,7 +473,6 @@ class pattern_finder:
 
         return json.dumps(patterns_list)
 
-
 # log = xes_import.apply('test-data/LOOP2.csv')
 # import pandas as pd
 # from pm4py.objects.log.util import dataframe_utils
@@ -409,4 +493,3 @@ class pattern_finder:
 # model_path = 'models/' + 'test' + '.png'
 # #
 # gsave.save(gviz, model_path)
-
