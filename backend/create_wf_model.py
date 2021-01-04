@@ -90,6 +90,20 @@ def add_parallel_gateway(wf, counts):
 
 
 def change_and_xor_to_or(wf, and_split, and_join, xors, counter):
+    """
+    Rewires and + xor to or in the model
+    Parameters
+    ----------
+    wf : model
+    and_split : split node
+    and_join : join node
+    xors : the xors inside the and pattern
+    counter : counter of or patterns
+
+    Returns rewired wf model
+    -------
+
+    """
     from wf_graph import WF
     split_name = "or_"+str(counter)+"_split"
     join_name = "or_"+str(counter)+"_join"
@@ -150,6 +164,20 @@ def change_and_xor_to_or(wf, and_split, and_join, xors, counter):
     return wf
 
 def change_and_to_multi_merge(wf, and_split, and_join, loop_split, loop_join):
+    """
+    Rewires and join to multi merge in wf_model
+    Parameters
+    ----------
+    wf : model
+    and_split : and split node
+    and_join : and join node
+    loop_split : loop split node
+    loop_join : loop join node
+
+    Returns
+    -------
+
+    """
     from wf_graph import WF
 
     last_in_loop = None
@@ -192,6 +220,19 @@ def change_and_to_multi_merge(wf, and_split, and_join, loop_split, loop_join):
 
 
 def merge_split_join(wf, split, join, inner_nodes):
+    """
+    Merges split and join inside of model
+    Parameters
+    ----------
+    wf : model
+    split : split node
+    join : join node
+    inner_nodes : nodes between split and join
+
+    Returns
+    -------
+
+    """
     from wf_graph import WF
     node_name = 'Merge of ' + split.get_name() + ' and ' + join.get_name()
     flows_in = []
