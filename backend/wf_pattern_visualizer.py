@@ -3,7 +3,7 @@ import tempfile
 from graphviz import Digraph
 
 
-def graphviz_visualization(wf_model, pattern_to_merge=[], loop_nodes=[]):
+def graphviz_visualization(wf_model, pattern_to_merge=[], loop_nodes=[], multi_merges=[]):
     """
     Do GraphViz visualization of a WF Model
     Parameters
@@ -45,7 +45,10 @@ def graphviz_visualization(wf_model, pattern_to_merge=[], loop_nodes=[]):
             if node.get_name().endswith('split'):
                 viz.node(node.get_id(), "AND-Split \n"+node.get_name(), style='filled', shape='diamond')
             else:
-                viz.node(node.get_id(), "AND-Join \n"+node.get_name(), style='filled', shape='diamond')
+                name = "AND-Join \n"+node.get_name()
+                if node.get_name() in multi_merges:
+                    name = 'Multi-Merge \n'+node.get_name()
+                viz.node(node.get_id(), name, style='filled', shape='diamond')
         elif isinstance(node, WF.InclusiveGateway):
             if node.get_name().endswith('split'):
                 viz.node(node.get_id(), "OR-Split \n"+node.get_name(), style='filled', shape='diamond')
