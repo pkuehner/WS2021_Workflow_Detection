@@ -3,7 +3,7 @@ import tempfile
 from graphviz import Digraph
 
 
-def graphviz_visualization(wf_model, pattern_to_merge=[], loop_nodes=[]):
+def graphviz_visualization(wf_model, pattern_to_merge=[], loop_nodes=[], pattern_to_color={}):
     """
     Do GraphViz visualization of a WF Model
     Parameters
@@ -26,6 +26,9 @@ def graphviz_visualization(wf_model, pattern_to_merge=[], loop_nodes=[]):
     viz.attr('node', shape='box')
     for node in wf_model.get_nodes():
         # if node.get_name() not in inner_nodes:
+        node_color = None
+        if node.get_name() in pattern_to_color:
+            node_color = pattern_to_color[node.get_name()]
         if isinstance(node, WF.StartEvent):
             viz.node(node.get_id(), "Start", style='filled', shape='circle', fillcolor='green')
         elif isinstance(node, WF.EndEvent):
@@ -35,22 +38,22 @@ def graphviz_visualization(wf_model, pattern_to_merge=[], loop_nodes=[]):
                 name = 'XOR-Split \n'+node.get_name()
                 if node.get_name() in loop_nodes:
                     name = 'LOOP-End \n'+node.get_name()
-                viz.node(node.get_id(), name, style='filled', shape='diamond')
+                viz.node(node.get_id(), name, style='filled', shape='diamond', color=node_color)
             else:
                 name = 'XOR-Join \n'+node.get_name()
                 if node.get_name() in loop_nodes:
                     name = 'LOOP-Start \n'+node.get_name()
-                viz.node(node.get_id(), name, style='filled', shape='diamond')
+                viz.node(node.get_id(), name, style='filled', shape='diamond', color=node_color)
         elif isinstance(node, WF.ParallelGateway):
             if node.get_name().endswith('split'):
-                viz.node(node.get_id(), "AND-Split \n"+node.get_name(), style='filled', shape='diamond')
+                viz.node(node.get_id(), "AND-Split \n"+node.get_name(), style='filled', shape='diamond', color=node_color)
             else:
-                viz.node(node.get_id(), "AND-Join \n"+node.get_name(), style='filled', shape='diamond')
+                viz.node(node.get_id(), "AND-Join \n"+node.get_name(), style='filled', shape='diamond', color=node_color)
         elif isinstance(node, WF.InclusiveGateway):
             if node.get_name().endswith('split'):
-                viz.node(node.get_id(), "OR-Split \n"+node.get_name(), style='filled', shape='diamond')
+                viz.node(node.get_id(), "OR-Split \n"+node.get_name(), style='filled', shape='diamond', color=node_color)
             else:
-                viz.node(node.get_id(), "OR-Join \n"+node.get_name(), style='filled', shape='diamond')
+                viz.node(node.get_id(), "OR-Join \n"+node.get_name(), style='filled', shape='diamond', color=node_color)
         else:
             viz.node(node.get_id(), node.get_name(), style='filled')
 

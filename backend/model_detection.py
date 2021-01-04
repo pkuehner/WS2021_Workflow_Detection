@@ -10,7 +10,7 @@ from wf_pattern_visualizer import graphviz_visualization as wf_visualizer
 import json
 
 
-def discover_wf_model(log_path, model_name, patterns_to_merge = None):
+def discover_wf_model(log_path, model_name, patterns_to_merge = None, pattern_to_color={}):
     """
     Discover the workflow pattern inside an event log
     Parameters
@@ -34,7 +34,7 @@ def discover_wf_model(log_path, model_name, patterns_to_merge = None):
         for pattern in patterns_to_merge:
             print(pattern)
             p_finder.merge_join(pattern)
-    gviz = wf_visualizer(p_finder.wf_model, loop_nodes = p_finder.get_loops())
+    gviz = wf_visualizer(p_finder.wf_model, loop_nodes=p_finder.get_loops(), pattern_to_color=pattern_to_color)
     model_path = 'models/' + model_name + '.png'
     gsave.save(gviz, model_path)
     return model_path
