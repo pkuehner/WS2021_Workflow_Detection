@@ -57,7 +57,8 @@ class pattern_finder:
             if node.get_name() in self.patterns:
                 return [node.get_name()]
             if node.get_name().endswith('split'):
-                join_node, isLoop = self.find_join_for_XOR_Split(node, 0)
+                seen = set()
+                join_node, isLoop = self.find_join_for_XOR_Split(node, node.get_name(), seen)
                 inner_patterns = []
                 for arc in out_arcs:
                     target = arc.get_target()
@@ -101,20 +102,24 @@ class pattern_finder:
 
         return []
 
-    def find_join_for_XOR_Split(self, node, openSplits):
+    def find_join_for_XOR_Split(self, node, split_name, seen):
+        if node in seen:
+            return None, True
         out_arcs = node.get_out_arcs()
+        seen.add(node)
         if isinstance(node, WF.ExclusiveGateway):
-            if node.get_name().endswith('split'):
-                openSplits += 1
-            else:
-                openSplits -= 1
-            if openSplits == 0:
+            if node.get_name().endswith('join') and split_name[:5] == node.get_name()[:5]:
+                seen.remove(node)
                 return node, False
         join_node = None
         isLoop = False
+        if len(out_arcs) == 0:
+            isLoop = True
         for arc in out_arcs:
             arc_node = arc.get_target()
-            x_join, is_loop = self.find_join_for_XOR_Split(arc_node, openSplits)
+            x_join, is_loop = self.find_join_for_XOR_Split(arc_node, split_name, seen)
+            if is_loop:
+                isLoop = True
             if x_join != None:
                 join_node = x_join  # TODO: This probably is a loop
             else:
@@ -319,21 +324,24 @@ class pattern_finder:
         return json.dumps(patterns_list)
 
 
-# log = xes_import.apply('logs/running-example.xes')
-# import pandas as pd
-# from pm4py.objects.log.util import dataframe_utils
-# from pm4py.objects.conversion.log import converter as log_converter
+#log = xes_import.apply('test-data/LOOP2.csv')
+import pandas as pd
+from pm4py.objects.log.util import dataframe_utils
+from pm4py.objects.conversion.log import converter as log_converter
 #
-# log_csv = pd.read_csv('test-data/OR_fail.csv', sep=',')
-# log_csv = dataframe_utils.convert_timestamp_columns_in_df(log_csv)
-# log_csv = log_csv.sort_values('time:timestamp')
-# #log = log_converter.apply(log_csv)
-# ptree = inductive_miner.apply_tree(log)
+log_csv = pd.read_csv('test-data/multi-merge2.csv', sep=',')
+log_csv = dataframe_utils.convert_timestamp_columns_in_df(log_csv)
+log_csv = log_csv.sort_values('time:timestamp')
+log = log_converter.apply(log_csv)
+ptree = inductive_miner.apply_tree(log)
 #
-# wf_model = pt_converter.apply(ptree)
-# p_finder = pattern_finder(wf_model)
-# print(p_finder.patterns_to_json())
+wf_model = pt_converter.apply(ptree)
+
+p_finder = pattern_finder(wf_model)
+print(p_finder.patterns_to_json())
+gviz = wf_visualizer(wf_model)
+model_path = 'models/' + 'test' + '.png'
 #
-# gviz = wf_visualizer(wf_model)
-# model_path = 'models/' + 'test' + '.png'
-# gsave.save(gviz, model_path)
+gsave.save(gviz, model_path)
+
+

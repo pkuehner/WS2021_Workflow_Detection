@@ -152,7 +152,7 @@ def change_and_xor_to_or(wf, and_split, and_join, xors):
 
 def merge_split_join(wf, split, join, inner_nodes):
     from wf_graph import WF
-    node_name = 'merged_join'
+    node_name = 'Merge of ' + split.get_name() + ' and ' + join.get_name()
     flows_in = []
     flows_out = []
     flows_to_remove = []
