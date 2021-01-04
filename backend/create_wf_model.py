@@ -89,10 +89,10 @@ def add_parallel_gateway(wf, counts):
     return wf, split, join, counts
 
 
-def change_and_xor_to_or(wf, and_split, and_join, xors):
+def change_and_xor_to_or(wf, and_split, and_join, xors, counter):
     from wf_graph import WF
-    split_name = "or_split"
-    join_name = "or_join"
+    split_name = "or_"+str(counter)+"_split"
+    join_name = "or_"+str(counter)+"_join"
 
     flows_in = []
     flows_out = []
@@ -149,10 +149,51 @@ def change_and_xor_to_or(wf, and_split, and_join, xors):
 
     return wf
 
+def change_and_to_multi_merge(wf, and_split, and_join, loop_split, loop_join):
+    from wf_graph import WF
+
+    last_in_loop = None
+    endEvent = None
+    flows_to_remove = set()
+    flows_to_add = []
+    for flow in wf.get_flows():
+        if flow.get_target() == and_join and flow.get_source() == loop_split:
+            flows_to_remove.add(flow)
+        if flow.get_source() == and_split and flow.get_target() == loop_join:
+            flows_to_remove.add(flow)
+        if flow.get_source() == loop_join:
+            flows_to_add.append(WF.Flow(and_join, flow.get_target()))
+            flows_to_remove.add(flow)
+        if flow.get_target() == loop_split:
+            last_in_loop = flow.get_source()
+            flows_to_remove.add(flow)
+        if flow.get_source() == and_join and isinstance(flow.get_target(), WF.EndEvent):
+            endEvent = flow.get_target()
+            flows_to_remove.add(flow)
+        if flow.get_source() == loop_split or flow.get_source() == loop_split:
+            flows_to_remove.add(flow)
+        if flow.get_target() == loop_split:
+            last_in_loop = flow.get_source()
+            flows_to_remove.add(flow)
+
+
+    for flow in flows_to_add:
+        wf.add_flow(flow)
+
+    for flow in flows_to_remove:
+        wf.remove_flow(flow)
+
+    wf.remove_node(loop_split)
+    wf.remove_node(loop_join)
+
+    wf.add_flow(WF.Flow(last_in_loop, endEvent))
+
+    return wf
+
 
 def merge_split_join(wf, split, join, inner_nodes):
     from wf_graph import WF
-    node_name = 'merged_join'
+    node_name = 'Merge of ' + split.get_name() + ' and ' + join.get_name()
     flows_in = []
     flows_out = []
     flows_to_remove = []
