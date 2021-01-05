@@ -3,6 +3,7 @@
 <html>
 <head>
 <link rel="stylesheet" type="text/css" href="{% static 'detection/styles.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'detection/zoom.css' %}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -27,7 +28,7 @@
                 {% for pattern in patterns %}
                     {% if pattern.pattern_type == "XOR Split" or pattern.pattern_type == "OR Split" or pattern.pattern_type == "AND Split" %}
                     <label class="checkbox theme">{{ pattern.pattern_type }} : {{ pattern.pattern_node }}
-                        <input id="{{ pattern.pattern_node }}" name="{{ pattern.pattern_node }}" type="checkbox">
+                        <input id="{{ pattern.pattern_node }}" name="{{ pattern.pattern_node }}" type="checkbox" {% if pattern.checked %} checked {% endif %}>
                         <span class="checkmark"></span>
                     </label>
                     {% endif %}
