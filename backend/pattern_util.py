@@ -133,17 +133,19 @@ class pattern_finder:
                        object
                        """
         if node in seen:
-            return None, True
+            if node.get_name() == split_name:
+                return None, True
+            return None, False
         out_arcs = node.get_out_arcs()
         seen.add(node)
         if isinstance(node, WF.ExclusiveGateway):
-            if node.get_name().endswith('join') and split_name[:5] == node.get_name()[:5]:
+            if node.get_name().endswith('join') and split_name[:6] == node.get_name()[:6]:
                 seen.remove(node)
                 return node, False
         join_node = None
         isLoop = False
-        if len(out_arcs) == 0:
-            isLoop = True
+        if len(node.get_out_arcs()) == 0:
+            return None, True
         for arc in out_arcs:
             arc_node = arc.get_target()
             x_join, is_loop = self.find_join_for_XOR_Split(arc_node, split_name, seen)
@@ -151,8 +153,6 @@ class pattern_finder:
                 isLoop = True
             if x_join != None:
                 join_node = x_join  # TODO: This probably is a loop
-            else:
-                isLoop = True
         return join_node, isLoop
 
     def find_join_for_And_Split(self, node, openSplits):
@@ -474,22 +474,29 @@ class pattern_finder:
         return json.dumps(patterns_list)
 
 # log = xes_import.apply('test-data/LOOP2.csv')
-# import pandas as pd
-# from pm4py.objects.log.util import dataframe_utils
-# from pm4py.objects.conversion.log import converter as log_converter
+import pandas as pd
+from pm4py.objects.log.util import dataframe_utils
+from pm4py.objects.conversion.log import converter as log_converter
+import create_wf_model as pt_converter
+from create_wf_model import change_and_xor_to_or, merge_split_join, change_and_to_multi_merge
+from pm4py.algo.discovery.inductive import algorithm as inductive_miner
+from pm4py.visualization.common import save as gsave
+from wf_graph import WF
+from wf_pattern_visualizer import graphviz_visualization as wf_visualizer
+
+
 #
-# #
-# log_csv = pd.read_csv('test-data/multi-merge2.csv', sep=',')
-# log_csv = dataframe_utils.convert_timestamp_columns_in_df(log_csv)
-# log_csv = log_csv.sort_values('time:timestamp')
-# log = log_converter.apply(log_csv)
-# ptree = inductive_miner.apply_tree(log)
-# #
-# wf_model = pt_converter.apply(ptree)
+log_csv = pd.read_csv('test-data/multi-merge_xor.csv', sep=',')
+log_csv = dataframe_utils.convert_timestamp_columns_in_df(log_csv)
+log_csv = log_csv.sort_values('time:timestamp')
+log = log_converter.apply(log_csv)
+ptree = inductive_miner.apply_tree(log)
 #
-# p_finder = pattern_finder(wf_model)
-# print(p_finder.patterns_to_json())
-# gviz = wf_visualizer(wf_model)
-# model_path = 'models/' + 'test' + '.png'
-# #
-# gsave.save(gviz, model_path)
+wf_model = pt_converter.apply(ptree)
+
+p_finder = pattern_finder(wf_model)
+print(p_finder.patterns_to_json())
+gviz = wf_visualizer(wf_model)
+model_path = 'models/' + 'test' + '.png'
+#
+gsave.save(gviz, model_path)
