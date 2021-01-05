@@ -2,7 +2,8 @@ import create_wf_model  as pt_converter
 from pattern_util import pattern_finder
 from importer import import_file
 from pm4py.algo.discovery.inductive import algorithm as inductive_miner
-from pm4py.objects.conversion.process_tree import converter as bpmn_converter
+from pm4py.objects.conversion.bpmn import converter as bpmn_converter
+from bpmn_converter import convert_wf_to_bpmn
 from pm4py.visualization.common import save as gsave
 from pm4py.visualization.petrinet import visualizer as pn_vis
 from pm4py.visualization.bpmn import visualizer as bpmn_visualizer
@@ -41,7 +42,7 @@ def discover_wf_model(log_path, model_name, patterns_to_merge = None, pattern_to
     return model_path
 
 
-def discover_pn_model(log_path, model_name):
+def discover_pn_model(log_path, model_name, patterns_to_merge = None):
     """
     Discover the petrinet models for an event log
     Parameters
@@ -56,14 +57,24 @@ def discover_pn_model(log_path, model_name):
         path to the discovered pn models
     """
     log = import_file(log_path, False)
-    net, initial_marking, final_marking = inductive_miner.apply(log, variant=inductive_miner.Variants.IM)
+    ptree = inductive_miner.apply_tree(log)
+    wf_model = pt_converter.apply(ptree)
+    p_finder = pattern_finder(wf_model)
+    if patterns_to_merge:
+        print(patterns_to_merge)
+        patterns_to_merge = json.loads(patterns_to_merge)
+        for pattern in patterns_to_merge:
+            print(pattern)
+            p_finder.merge_join(pattern)
+    bpmn = convert_wf_to_bpmn(p_finder.wf_model)
+    net, initial_marking, final_marking = bpmn_converter.apply(bpmn, variant=bpmn_converter.Variants.TO_PETRI_NET)
     gviz = pn_vis.apply(net, initial_marking, final_marking)
     model_path = 'models/' + model_name + '.png'
     pn_vis.save(gviz, model_path)
     return model_path
 
 
-def discover_bpmn_model(log_path, model_name):
+def discover_bpmn_model(log_path, model_name, patterns_to_merge = None):
     """
     Discover the BPMN for an event log
     Parameters
@@ -79,7 +90,15 @@ def discover_bpmn_model(log_path, model_name):
     """
     log = import_file(log_path, False)
     ptree = inductive_miner.apply_tree(log)
-    bpmn = bpmn_converter.apply(ptree, variant=bpmn_converter.Variants.TO_BPMN)
+    wf_model = pt_converter.apply(ptree)
+    p_finder = pattern_finder(wf_model)
+    if patterns_to_merge:
+        print(patterns_to_merge)
+        patterns_to_merge = json.loads(patterns_to_merge)
+        for pattern in patterns_to_merge:
+            print(pattern)
+            p_finder.merge_join(pattern)
+    bpmn = convert_wf_to_bpmn(p_finder.wf_model)
     gviz = bpmn_visualizer.apply(bpmn)
     model_path = 'models/' + model_name + '.png'
     gsave.save(gviz, model_path)

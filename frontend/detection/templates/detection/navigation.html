@@ -1,5 +1,5 @@
 {% extends 'detection/index.html' %}
-
+{% load static %}
 {% block model_representation %}
 
 <input type="hidden" id="modelName" name="variable" value="{{ model_name }}">
@@ -26,5 +26,5 @@
 
 {% block image_model %}
 {% endblock %}
-
+<script src="{% static 'detection/zoom.js' %}"></script>
 {% endblock %}

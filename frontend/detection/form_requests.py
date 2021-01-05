@@ -4,13 +4,19 @@ from .client import discover_model_as_image, discover_workflow_patterns_as_json
 import os.path
 import json
 
-def send_log_to_backend(request, context, model_name, pattern_id = None):
+def send_log_to_backend(request, context, model_name):
+    patterns_to_merge = []
+    if request.session.get('patterns', None):
+        patterns = request.session['patterns']
+        for pattern in patterns:
+            if pattern['checked'] == True:
+                patterns_to_merge.append(pattern['pattern_node'])
     request.session['model_name'] = model_name
     if request.session.get('log_path', None):
         print(model_name)
-        if pattern_id:
-            pattern_id = json.dumps(pattern_id)
-        result = discover_model_as_image(request.session['log_path'], model_name, pattern_id)
+        if patterns_to_merge:
+            patterns_to_merge = json.dumps(patterns_to_merge)
+        result = discover_model_as_image(request.session['log_path'], model_name, patterns_to_merge)
         if result:
             return redirect(model_name)
         else:
@@ -47,6 +53,8 @@ def handle_upload(request, context):
         json_result = discover_workflow_patterns_as_json(file_path)
         parse_json = json.loads(json_result)
         patterns = json.loads(parse_json["patterns"])
+        for pattern in patterns:
+            pattern['checked'] = False
         request.session['patterns'] = patterns
         if json_result and image_result:
             return redirect('workflow')
@@ -60,14 +68,18 @@ def handle_upload(request, context):
 def is_merge_request(request):
     return 'aggregate-pattern' in request.POST
 
-def handle_merge_request(request, context):
+def handle_merge_request(request, context, model_name):
+    if request.session.get('patterns', None):
+        patterns = request.session['patterns']
+        for pattern in patterns:
+            pattern['checked'] = False
     if request.session.get('log_path', None):
-        patterns_to_merge = []
         for item in request.POST:
-            print(item)
             if item.endswith('split') or item.endswith('join'):
-                patterns_to_merge.append(item)
-        return send_log_to_backend(request, context, 'workflow', patterns_to_merge)
+                for pattern in patterns:
+                    if pattern['pattern_node'] == item:
+                        pattern['checked'] = True
+        return send_log_to_backend(request, context, model_name)
     else:
         context['upload_error'] = 'No event log found!'
         return render(request, 'detection/index.html', context)
@@ -81,7 +93,7 @@ def get_model_representation(request, model_name):
     if is_upload_request(request):
         return handle_upload(request, context)
     if is_merge_request(request):
-        return handle_merge_request(request, context)
+        return handle_merge_request(request, context, model_name)
     image_path = 'detection/static/detection/models/'+ model_name +'.png'
     if os.path.isfile(image_path):
         context['show_model'] = True
