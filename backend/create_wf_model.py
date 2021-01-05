@@ -218,6 +218,59 @@ def change_and_to_multi_merge(wf, and_split, and_join, loop_split, loop_join):
 
     return wf
 
+def change_loop_or_to_discriminator(wf, or_split, or_join, loop_split, loop_join, counter):
+    from wf_graph import WF
+
+    last_in_loop = None
+    endEvent = None
+    flows_to_remove = set()
+    flows_to_add = []
+    split_name = "parallel_discr_" + str(counter) + "_split"
+    join_name = "parallel_discr_" + str(counter) + "_join"
+    split_node = WF.ParallelGateway(split_name)
+    join_node = WF.ParallelGateway(join_name)
+
+    wf.add_node(split_node)
+    wf.add_node(join_node)
+
+    for flow in wf.get_flows():
+        if flow.get_target() == or_split and flow.get_source() == loop_join:
+            flows_to_remove.add(flow)
+        if flow.get_source() == or_join and flow.get_target() == loop_split:
+            flows_to_remove.add(flow)
+
+        if flow.get_source() == loop_join:
+            flows_to_add.append(WF.Flow(join_node, flow.get_target()))
+            flows_to_remove.add(flow)
+        if flow.get_target() == loop_join:
+            last_in_loop = flow.get_source()
+            flows_to_remove.add(flow)
+            flows_to_add.append(WF.Flow(flow.get_source(), split_node))
+        if flow.get_source() == loop_split and isinstance(flow.get_target(), WF.EndEvent):
+            endEvent = flow.get_target()
+            flows_to_remove.add(flow)
+        if flow.get_source() == or_split:
+            flows_to_add.append(WF.Flow(split_node, flow.get_target()))
+            flows_to_remove.add(flow)
+        if flow.get_target() == or_join:
+            flows_to_add.append(WF.Flow(flow.get_source(), join_node))
+            flows_to_remove.add(flow)
+
+
+    for flow in flows_to_add:
+        wf.add_flow(flow)
+
+    for flow in flows_to_remove:
+        wf.remove_flow(flow)
+
+    wf.add_flow(WF.Flow(last_in_loop, endEvent))
+    wf.remove_node(loop_split)
+    wf.remove_node(loop_join)
+    wf.remove_node(or_split)
+    wf.remove_node(or_join)
+
+    return wf
+
 
 def merge_split_join(wf, split, join, inner_nodes):
     """
