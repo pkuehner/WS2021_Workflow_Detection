@@ -195,7 +195,7 @@ def change_and_to_multi_merge(wf, and_split, and_join, loop_split, loop_join):
         if flow.get_target() == loop_split:
             last_in_loop = flow.get_source()
             flows_to_remove.add(flow)
-        if flow.get_source() == and_join and isinstance(flow.get_target(), WF.EndEvent):
+        if flow.get_source() == and_join:
             endEvent = flow.get_target()
             flows_to_remove.add(flow)
         if flow.get_source() == loop_split or flow.get_source() == loop_split:
