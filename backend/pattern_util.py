@@ -232,14 +232,14 @@ class pattern_finder:
             pattern = self.patterns[pattern]
             if pattern['name'].startswith('parallel'):
                 partner_node = self.get_node_by_name(pattern['partner'])
-                if not (len(partner_node.get_out_arcs()) == 1 and isinstance(
-                        partner_node.get_out_arcs()[0].get_target(), WF.EndEvent)):  # Cant be Multi Merge
-                    return
+                if not len(partner_node.get_out_arcs()) == 1:  # Cant be Multi Merge
+                    continue
                 node = self.get_node_by_name(pattern['name'])
                 post_merge = None
                 for arc in node.get_out_arcs():
                     out_node_join = arc.get_target()
                     out_name_split = out_node_join.get_name()[:-4] + 'split'
+                    found_one = True
                     if out_name_split in self.patterns and self.patterns[out_name_split]['isLoop']:
                         out_node_split = self.get_node_by_name(out_name_split)
                         if len(out_node_split.get_out_arcs()) == 2:
@@ -248,8 +248,8 @@ class pattern_finder:
                                     if post_merge is None:
                                         post_merge = out_name_split
                                     else:
-                                        return
-                if post_merge != None:
+                                        found_one = False
+                if found_one and post_merge != None:
                     pattern['is_multi_merge'] = True
                     pattern['post_merge'] = post_merge
 
