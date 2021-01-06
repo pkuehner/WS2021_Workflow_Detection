@@ -3,7 +3,7 @@ import tempfile
 from graphviz import Digraph
 
 
-def graphviz_visualization(wf_model, pattern_to_merge=[], loop_nodes=[], multi_merges=[]):
+def graphviz_visualization(wf_model, pattern_to_merge=[], loop_nodes=[], multi_merges=[], discriminators = []):
     """
     Do GraphViz visualization of a WF Model
     Parameters
@@ -48,6 +48,8 @@ def graphviz_visualization(wf_model, pattern_to_merge=[], loop_nodes=[], multi_m
                 name = "AND-Join \n"+node.get_name()
                 if node.get_name() in multi_merges:
                     name = 'Multi-Merge \n'+node.get_name()
+                elif node.get_name() in discriminators:
+                    name = 'Discriminator \n'+node.get_name()
                 viz.node(node.get_id(), name, style='filled', shape='diamond')
         elif isinstance(node, WF.InclusiveGateway):
             if node.get_name().endswith('split'):

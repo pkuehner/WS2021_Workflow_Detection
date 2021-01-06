@@ -5,14 +5,10 @@
 
 <div class="row">
     <div class="container full" style="text-align: center;">
-        <!-- {% if show_model %}
-        {% with 'detection/models/'|add:model_name|add:'.png' as model_image %}
-        <img id="imagemodel" src="{% static model_image %}" class="responsive" alt="Model">
-        {% endwith %}
-        {% endif %} -->
         {% if show_model %}
         <img id="imagemodel" src="{% static 'detection/models/workflow.png' %}" class="responsive" alt="Model">
         {% endif %}
+        <div id="spinner" style="display: none" class="loader"></div>
         {% block content %}
         <h1>Patterns</h1>
         {% if patterns %}
@@ -34,7 +30,6 @@
         </table>
         {% endif %}
         {% endblock %}
-        <div id="spinner" style="display: none" class="loader"></div>
     </div>
 </div>
 

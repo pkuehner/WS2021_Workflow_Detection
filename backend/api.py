@@ -57,9 +57,17 @@ def model_represenation_as_image():
             else:
                 model_path = discover_wf_model(log_path, model_name)
         elif model_name == 'bpmn':
-            model_path = discover_bpmn_model(log_path, model_name)
+            if 'pattern_id' in request.values:
+                print('Patterns-to-merge:' + request.values['pattern_id'])
+                model_path = discover_bpmn_model(log_path, model_name, patterns_to_merge=request.values['pattern_id'])
+            else:
+                model_path = discover_bpmn_model(log_path, model_name)
         elif model_name == 'pn':
-            model_path = discover_pn_model(log_path, model_name)
+            if 'pattern_id' in request.values:
+                print('Patterns-to-merge:' + request.values['pattern_id'])
+                model_path = discover_pn_model(log_path, model_name, patterns_to_merge=request.values['pattern_id'])
+            else:
+                model_path = discover_pn_model(log_path, model_name)
         return send_file(model_path, mimetype='image/png')
     except ValueError:
         return Response("File import not possible", 400)
