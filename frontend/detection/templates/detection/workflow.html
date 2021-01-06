@@ -12,7 +12,7 @@
         {% block content %}
         <h1>Patterns</h1>
         {% if patterns %}
-        <table>
+        <table class="table">
             <tr>
                 <th>Pattern Type</th>
                 <th>Pattern Node</th>
@@ -28,6 +28,20 @@
             </tr>
             {% endfor %}
         </table>
+        <script type="text/javascript">
+
+            function exportJson(el) {
+                False = false;
+                True = true;
+                pattern_data = {{ patterns|safe }};
+                var data = "text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(pattern_data));
+                // what to return in order to show download window?
+
+                el.setAttribute("href", "data:" + data);
+                el.setAttribute("download", "data.json");
+            }
+        </script>
+        <a id="exportJSON" onmouseover="exportJson(this);" class="theme"><i class="theme"></i> Export Patterns</a>
         {% endif %}
         {% endblock %}
     </div>

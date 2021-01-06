@@ -1,16 +1,18 @@
 import json
 
-from create_wf_model import change_and_xor_to_or, merge_split_join, change_and_to_multi_merge
-from wf_graph import WF
-
 
 class pattern_finder:
-    def __init__(self, wf_model):
+    def __init__(self, wf_model, advanced_patterns = True):
         self.wf_model = wf_model
         self.patterns = {}
         self.discover_patterns()
         self.make_ors()
-        self.make_multi_merges()
+        if advanced_patterns:
+            self.make_multi_merges()
+        self.rediscover_patterns()
+        self.check_patterns_for_discriminator()
+        if advanced_patterns:
+            self.make_discr()
         self.rediscover_patterns()
 
     def rediscover_patterns(self):
@@ -23,6 +25,7 @@ class pattern_finder:
         multi_merges = self.get_multi_merges()
         self.patterns = {}
         self.discover_patterns()
+        self.mark_discriminators()
         for pattern in self.patterns:
             pattern = self.patterns[pattern]
             if pattern['partner'] in multi_merges:
@@ -58,7 +61,9 @@ class pattern_finder:
             "isLoop": is_loop,
             "is_or": is_or,
             "is_multi_merge": False,
-            "post_merge": None
+            "post_merge": None,
+            "is_discriminator": False,
+            "post_discriminator": None
         }
         self.patterns[name] = pattern
         return pattern
@@ -253,6 +258,32 @@ class pattern_finder:
                     pattern['is_multi_merge'] = True
                     pattern['post_merge'] = post_merge
 
+    def check_patterns_for_discriminator(self):
+        """
+        Checks if patterns for Discriminators and marks them
+        Returns
+        -------
+
+        """
+        for pattern in self.patterns:
+            pattern = self.patterns[pattern]
+            if pattern['name'].startswith('xor') and pattern['isLoop']:
+                partner_node = self.get_node_by_name(pattern['partner'])
+                node = self.get_node_by_name(pattern['name'])
+                counter = 0
+                if len(node.get_out_arcs()) == 2:
+                    for arc in partner_node.get_out_arcs():
+                        out_node_split = arc.get_target()
+                        out_name_split = out_node_split.get_name()
+                        out_name_join = out_node_split.get_name()[:-5] + 'join'
+                        if out_name_split in self.patterns and out_name_split.startswith('or'):
+                            out_node_join = self.get_node_by_name(out_name_join)
+                            if len(out_node_join.get_out_arcs()) == 1:
+                                if out_node_join.get_out_arcs()[0].get_target() == node:
+                                    pattern['is_discriminator'] = True
+                                    pattern['post_discriminator'] = partner_node.get_out_arcs()[
+                                        0].get_target().get_name()
+
     def recreate_sequences(self, node, seen):
         if (node not in seen):
             sequence = self.find_split_join_pattern(node, None)
@@ -351,6 +382,23 @@ class pattern_finder:
                 loop_join_node = self.get_node_by_name(self.patterns[pattern['post_merge']]['partner'])
                 change_and_to_multi_merge(self.wf_model, and_split_node, and_join_node, loop_split_node, loop_join_node)
 
+    def make_discr(self):
+        """
+        Rewires the multi merges in wf_model
+        """
+        for pattern in self.patterns:
+            counter = 1
+            pattern = self.patterns[pattern]
+            if pattern['is_discriminator']:
+                loop_split_node = self.get_node_by_name(pattern['name'])
+                loop_join_node = self.get_node_by_name(pattern['partner'])
+                or_split_node = self.get_node_by_name(pattern['post_discriminator'])
+                or_join_node = self.get_node_by_name(self.patterns[pattern['post_discriminator']]['partner'])
+                _, loop_redo_nodes = self.get_loop_redo_nodes(loop_split_node, loop_join_node, loop_split_node)
+                change_loop_or_to_discriminator(self.wf_model, or_split_node, or_join_node, loop_split_node,
+                                                loop_join_node, loop_redo_nodes, counter)
+                counter += 1
+
     def discover_patterns(self):
         """
         Discovers patterns and finds or and multi merges
@@ -369,11 +417,12 @@ class pattern_finder:
         ----------
         pattern_name : Split node name of pattern to merge
         """
-        merge_split_join(self.wf_model, self.get_node_by_name(pattern_name),
-                         self.get_node_by_name(self.patterns[pattern_name]['partner']),
-                         self.expand_inner_nodes(pattern_name))
-        self.patterns = {}
-        self.discover_patterns()
+        if pattern_name in self.patterns:
+            merge_split_join(self.wf_model, self.get_node_by_name(pattern_name),
+                             self.get_node_by_name(self.patterns[pattern_name]['partner']),
+                             self.expand_inner_nodes(pattern_name))
+            self.patterns = {}
+            self.discover_patterns()
 
     def get_loops(self):
         """
@@ -402,6 +451,41 @@ class pattern_finder:
                 multi_merges.append(pattern['partner'])
         return multi_merges
 
+    def mark_discriminators(self):
+        for pattern_name in self.patterns:
+            pattern = self.patterns[pattern_name]
+            if pattern_name.startswith('parallel_discr_'):
+                pattern['is_discriminator'] = True
+
+    def get_discriminators(self):
+        discriminators = []
+        for pattern_name in self.patterns:
+            pattern = self.patterns[pattern_name]
+            if pattern['is_discriminator']:
+                discriminators.append(pattern['partner'])
+        return discriminators
+
+    def get_loop_redo_nodes(self, loop_split_node, loop_join_node, current_node):
+        for arc in current_node.get_out_arcs():
+            if arc.get_target() == loop_join_node:
+                x = set()
+                x.add(current_node)
+                return True, x
+
+        inner_nodes = set()
+        is_right_path = False
+        for arc in current_node.get_out_arcs():
+            if arc.get_target() != loop_join_node:
+                is_right_path_2, inner_nodes_2 = self.get_loop_redo_nodes(loop_split_node, loop_join_node,
+                                                                          arc.get_target())
+                if is_right_path_2:
+                    is_right_path = True
+                    for inner_node in inner_nodes_2:
+                        inner_nodes.add(inner_node)
+                    if (current_node != loop_split_node):
+                        inner_nodes.add(current_node)
+        return is_right_path, inner_nodes
+
     def patterns_to_json(self):
         """
         Returns JSON Representation of Patterns
@@ -413,7 +497,7 @@ class pattern_finder:
         for pattern_name in self.patterns:
             for pattern in [pattern_name, self.patterns[pattern_name]['partner']]:
                 is_multi_merge = self.patterns[pattern_name]['is_multi_merge']
-                post_merge = self.patterns[pattern_name]['post_merge']
+                is_discriminator = self.patterns[pattern_name]['is_discriminator']
 
                 incoming_nodes = []
                 outgoing_nodes = []
@@ -439,6 +523,8 @@ class pattern_finder:
                     pattern_type = 'AND Join'
                     if is_multi_merge:
                         pattern_type = 'Multi Merge'
+                    if is_discriminator:
+                        pattern_type = 'Discriminator'
 
                 if self.patterns[pattern_name]['isLoop'] and pattern.endswith('join'):
                     pattern_type = 'Loop Start'
@@ -473,20 +559,21 @@ class pattern_finder:
 
         return json.dumps(patterns_list)
 
+
 # log = xes_import.apply('test-data/LOOP2.csv')
 import pandas as pd
 from pm4py.objects.log.util import dataframe_utils
 from pm4py.objects.conversion.log import converter as log_converter
 import create_wf_model as pt_converter
-from create_wf_model import change_and_xor_to_or, merge_split_join, change_and_to_multi_merge
+from create_wf_model import change_and_xor_to_or, merge_split_join, change_and_to_multi_merge, \
+    change_loop_or_to_discriminator
 from pm4py.algo.discovery.inductive import algorithm as inductive_miner
 from pm4py.visualization.common import save as gsave
 from wf_graph import WF
 from wf_pattern_visualizer import graphviz_visualization as wf_visualizer
 
-
 #
-log_csv = pd.read_csv('test-data/multi-merge_xor.csv', sep=',')
+log_csv = pd.read_csv('test-data/3-out-of-4.csv', sep=',')
 log_csv = dataframe_utils.convert_timestamp_columns_in_df(log_csv)
 log_csv = log_csv.sort_values('time:timestamp')
 log = log_converter.apply(log_csv)
@@ -495,8 +582,10 @@ ptree = inductive_miner.apply_tree(log)
 wf_model = pt_converter.apply(ptree)
 
 p_finder = pattern_finder(wf_model)
-print(p_finder.patterns_to_json())
+
 gviz = wf_visualizer(wf_model)
 model_path = 'models/' + 'test' + '.png'
 #
 gsave.save(gviz, model_path)
+
+print(p_finder.patterns_to_json())

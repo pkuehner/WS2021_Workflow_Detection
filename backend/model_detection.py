@@ -35,7 +35,7 @@ def discover_wf_model(log_path, model_name, patterns_to_merge = None):
         for pattern in patterns_to_merge:
             print(pattern)
             p_finder.merge_join(pattern)
-    gviz = wf_visualizer(p_finder.wf_model, loop_nodes = p_finder.get_loops(), multi_merges = p_finder.get_multi_merges())
+    gviz = wf_visualizer(p_finder.wf_model, loop_nodes = p_finder.get_loops(), multi_merges = p_finder.get_multi_merges(), discriminators = p_finder.get_discriminators())
     model_path = 'models/' + model_name + '.png'
     gsave.save(gviz, model_path)
     return model_path
@@ -58,7 +58,7 @@ def discover_pn_model(log_path, model_name, patterns_to_merge = None):
     log = import_file(log_path, False)
     ptree = inductive_miner.apply_tree(log)
     wf_model = pt_converter.apply(ptree)
-    p_finder = pattern_finder(wf_model)
+    p_finder = pattern_finder(wf_model, advanced_patterns = False)
     if patterns_to_merge:
         print(patterns_to_merge)
         patterns_to_merge = json.loads(patterns_to_merge)
@@ -90,7 +90,7 @@ def discover_bpmn_model(log_path, model_name, patterns_to_merge = None):
     log = import_file(log_path, False)
     ptree = inductive_miner.apply_tree(log)
     wf_model = pt_converter.apply(ptree)
-    p_finder = pattern_finder(wf_model)
+    p_finder = pattern_finder(wf_model, advanced_patterns = False)
     if patterns_to_merge:
         print(patterns_to_merge)
         patterns_to_merge = json.loads(patterns_to_merge)
