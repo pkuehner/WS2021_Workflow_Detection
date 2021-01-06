@@ -12,5 +12,7 @@ function highlightCurrentTabSelection(id) {
     element.classList.add("selected");
 }
 
+
+
 var modelName = document.getElementById("modelName").value;
 highlightCurrentTabSelection(modelName);
