@@ -2,17 +2,18 @@ import json
 
 
 class pattern_finder:
-    def __init__(self, wf_model):
+    def __init__(self, wf_model, advanced_patterns = True):
         self.wf_model = wf_model
         self.patterns = {}
         self.discover_patterns()
         self.make_ors()
-        self.make_multi_merges()
+        if advanced_patterns:
+            self.make_multi_merges()
         self.rediscover_patterns()
         self.check_patterns_for_discriminator()
-        self.make_discr()
+        if advanced_patterns:
+            self.make_discr()
         self.rediscover_patterns()
-        print(self.patterns)
 
     def rediscover_patterns(self):
         """
@@ -416,11 +417,12 @@ class pattern_finder:
         ----------
         pattern_name : Split node name of pattern to merge
         """
-        merge_split_join(self.wf_model, self.get_node_by_name(pattern_name),
-                         self.get_node_by_name(self.patterns[pattern_name]['partner']),
-                         self.expand_inner_nodes(pattern_name))
-        self.patterns = {}
-        self.discover_patterns()
+        if pattern_name in self.patterns:
+            merge_split_join(self.wf_model, self.get_node_by_name(pattern_name),
+                             self.get_node_by_name(self.patterns[pattern_name]['partner']),
+                             self.expand_inner_nodes(pattern_name))
+            self.patterns = {}
+            self.discover_patterns()
 
     def get_loops(self):
         """

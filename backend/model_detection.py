@@ -58,7 +58,7 @@ def discover_pn_model(log_path, model_name, patterns_to_merge = None):
     log = import_file(log_path, False)
     ptree = inductive_miner.apply_tree(log)
     wf_model = pt_converter.apply(ptree)
-    p_finder = pattern_finder(wf_model)
+    p_finder = pattern_finder(wf_model, advanced_patterns = False)
     if patterns_to_merge:
         print(patterns_to_merge)
         patterns_to_merge = json.loads(patterns_to_merge)
@@ -90,7 +90,7 @@ def discover_bpmn_model(log_path, model_name, patterns_to_merge = None):
     log = import_file(log_path, False)
     ptree = inductive_miner.apply_tree(log)
     wf_model = pt_converter.apply(ptree)
-    p_finder = pattern_finder(wf_model)
+    p_finder = pattern_finder(wf_model, advanced_patterns = False)
     if patterns_to_merge:
         print(patterns_to_merge)
         patterns_to_merge = json.loads(patterns_to_merge)
