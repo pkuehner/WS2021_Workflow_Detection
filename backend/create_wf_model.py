@@ -222,6 +222,7 @@ def change_loop_or_to_discriminator(wf, or_split, or_join, loop_split, loop_join
     from wf_graph import WF
 
     last_in_loop = None
+    first_in_loop = None
     endEvent = None
     flows_to_remove = set()
     flows_to_add = []
@@ -250,6 +251,7 @@ def change_loop_or_to_discriminator(wf, or_split, or_join, loop_split, loop_join
         if flow.get_source() == loop_split:
             if flow.get_target() not in loop_redo_nodes:
                 endEvent = flow.get_target()
+            else: first_in_loop = flow.get_target()
             flows_to_remove.add(flow)
         if flow.get_source() == or_split:
             flows_to_add.append(WF.Flow(split_node, flow.get_target()))
@@ -264,7 +266,7 @@ def change_loop_or_to_discriminator(wf, or_split, or_join, loop_split, loop_join
 
     for flow in flows_to_remove:
         wf.remove_flow(flow)
-    wf.add_flow(WF.Flow(join_node, last_in_loop))
+    wf.add_flow(WF.Flow(join_node, first_in_loop))
     wf.add_flow(WF.Flow(last_in_loop, endEvent))
     wf.remove_node(loop_split)
     wf.remove_node(loop_join)
