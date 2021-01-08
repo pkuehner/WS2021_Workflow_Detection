@@ -128,6 +128,7 @@ button:hover {
     user-select: none;
     background-color: var(--secondary-color);
     color: var(--primary-color);
+    font-size: 1.3em;
 }
 .checkbox input {
     position: absolute;
