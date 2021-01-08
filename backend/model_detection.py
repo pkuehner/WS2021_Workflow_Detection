@@ -35,6 +35,8 @@ def discover_wf_model(log_path, model_name, patterns_to_merge = None, pattern_to
         for pattern in patterns_to_merge:
             print(pattern)
             p_finder.merge_join(pattern)
+    if len(pattern_to_color) > 0:
+        pattern_to_color = json.loads(pattern_to_color)
     gviz = wf_visualizer(p_finder.wf_model, loop_nodes = p_finder.get_loops(), multi_merges = p_finder.get_multi_merges(), discriminators = p_finder.get_discriminators(), pattern_to_color=pattern_to_color)
     model_path = 'models/' + model_name + '.png'
     gsave.save(gviz, model_path)

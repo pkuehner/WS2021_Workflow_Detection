@@ -3,7 +3,7 @@ import requests
 base_url = 'http://localhost:5000'
 
 
-def discover_model_as_image(log_path, image_name, pattern_id = None):
+def discover_model_as_image(log_path, image_name, pattern_id = None, color_id = None):
     """
     Upload the event log to the backend
     Parameters
@@ -22,6 +22,8 @@ def discover_model_as_image(log_path, image_name, pattern_id = None):
     data = {'model': image_name}
     if pattern_id:
         data['pattern_id'] = pattern_id
+    if color_id:
+        data['color_id'] = color_id
     try:
         r = requests.post(url, data=data, files=upload_file)
     except requests.exceptions.RequestException as e:

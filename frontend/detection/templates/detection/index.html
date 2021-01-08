@@ -3,8 +3,8 @@
 <html>
 <head>
 <link rel="stylesheet" type="text/css" href="{% static 'detection/styles.css' %}">
-<link rel="stylesheet" type="text/css" href="{% static 'detection/zoom.css' %}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<script src='https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js'></script>
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
@@ -27,14 +27,34 @@
                 {% csrf_token %}
                 {% for pattern in patterns %}
                     {% if pattern.pattern_type == "XOR Split" or pattern.pattern_type == "OR Split" or pattern.pattern_type == "AND Split" %}
-                    <label class="checkbox theme">{{ pattern.pattern_type }} : {{ pattern.pattern_node }}
-                        <input id="{{ pattern.pattern_node }}" name="{{ pattern.pattern_node }}" type="checkbox" {% if pattern.checked %} checked {% endif %}>
-                        <span class="checkmark"></span>
-                    </label>
+                    <div class="row">
+                        <div style="flex: 90%">
+                            <label class="checkbox theme">{{ pattern.pattern_type }} : {{ pattern.pattern_node }} 
+                                <input id="{{ pattern.pattern_node }}" name="{{ pattern.pattern_node }}" type="checkbox" {% if pattern.checked %} checked {% endif %}>
+                                <span class="checkmark"></span>
+                            </label>
+                        </div>
+                    </div>
                     {% endif %}
                 {% endfor %}
                 <br/>
                 <button type="submit" name ="aggregate-pattern" class="theme"><i class="fa fa-filter"></i> Aggregate Pattern</button>
+            </form>
+            <hr/>
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                {% for pattern in patterns %}
+                    {% if pattern.pattern_type != "Sequence" %}
+                    <div class="row">
+                        <input type="color" id="color-{{ pattern.pattern_node }}" name="color-{{ pattern.pattern_node }}" value="{{ pattern.color }}">
+                        <div style="flex: 90%">
+                            <label class="checkbox theme">{{ pattern.pattern_type }} : {{ pattern.pattern_node }} 
+                            </label>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+                <button type="submit" name ="color-pattern" class="theme"><i class="fa fa-paint-brush"></i> Color Pattern</button>
             </form>
             <hr/>
             <form method="POST" enctype="multipart/form-data">
