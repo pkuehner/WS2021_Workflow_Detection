@@ -23,3 +23,12 @@ panzoom(element, {
 
 var modelName = document.getElementById("modelName").value;
 highlightCurrentTabSelection(modelName);
+
+
+function exportJson(el) {
+    var patterns = document.getElementById("patternsJson").value;
+    console.log(patterns)
+    var data = "text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(patterns));
+    el.setAttribute("href", "data:" + data);
+    el.setAttribute("download", "data.json");
+}

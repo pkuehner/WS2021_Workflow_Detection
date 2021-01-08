@@ -23,40 +23,12 @@
     </div>
     <div class="quarter column container">
         <div class="container">
-            <form method="POST" enctype="multipart/form-data">
-                {% csrf_token %}
-                {% for pattern in patterns %}
-                    {% if pattern.pattern_type == "XOR Split" or pattern.pattern_type == "OR Split" or pattern.pattern_type == "AND Split" %}
-                    <div class="row">
-                        <div style="flex: 90%">
-                            <label class="checkbox theme">{{ pattern.pattern_type }} : {{ pattern.pattern_node }} 
-                                <input id="{{ pattern.pattern_node }}" name="{{ pattern.pattern_node }}" type="checkbox" {% if pattern.checked %} checked {% endif %}>
-                                <span class="checkmark"></span>
-                            </label>
-                        </div>
-                    </div>
-                    {% endif %}
-                {% endfor %}
-                <br/>
-                <button type="submit" name ="aggregate-pattern" class="theme"><i class="fa fa-filter"></i> Aggregate Pattern</button>
-            </form>
-            <hr/>
-            <form method="POST" enctype="multipart/form-data">
-                {% csrf_token %}
-                {% for pattern in patterns %}
-                    {% if pattern.pattern_type != "Sequence" %}
-                    <div class="row">
-                        <input type="color" id="color-{{ pattern.pattern_node }}" name="color-{{ pattern.pattern_node }}" value="{{ pattern.color }}">
-                        <div style="flex: 90%">
-                            <label class="checkbox theme">{{ pattern.pattern_type }} : {{ pattern.pattern_node }} 
-                            </label>
-                        </div>
-                    </div>
-                    {% endif %}
-                {% endfor %}
-                <button type="submit" name ="color-pattern" class="theme"><i class="fa fa-paint-brush"></i> Color Pattern</button>
-            </form>
-            <hr/>
+            {% block merge_pattern %}
+            {% endblock %}
+
+            {% block color_pattern %}
+            {% endblock %}
+            {% block upload_log %}
             <form method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
                 <div class="row">
@@ -75,15 +47,11 @@
                 <span style="color: red; font-size: 1.5em;">{{ upload_error }}</span>
                 {% endif %}
             </form>
-            <div class="row">
-                <div class="full">
-                    {% with 'detection/models/'|add:model_name|add:'.png' as model_image %}
-                    <a class="theme download export" href="{% static model_image %}" download>
-                        <i class="fa fa-download"></i> Export Model 
-                    </a>
-                    {% endwith %}
-                </div>
-            </div>
+            {% endblock %}
+            {% block export_model %}
+            {% endblock %}
+            {% block export_json %}
+            {% endblock %}
         </div>
     </div>
 </div>
