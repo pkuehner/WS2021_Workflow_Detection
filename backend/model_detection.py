@@ -11,7 +11,7 @@ from wf_pattern_visualizer import graphviz_visualization as wf_visualizer
 import json
 
 
-def discover_wf_model(log_path, model_name, patterns_to_merge = None, pattern_to_color={}):
+def discover_wf_model(log_path, model_name, patterns_to_merge = None, pattern_to_color = {}):
     """
     Discover the workflow pattern inside an event log
     Parameters
@@ -30,10 +30,8 @@ def discover_wf_model(log_path, model_name, patterns_to_merge = None, pattern_to
     wf_model = pt_converter.apply(ptree)
     p_finder = pattern_finder(wf_model)
     if patterns_to_merge:
-        print(patterns_to_merge)
         patterns_to_merge = json.loads(patterns_to_merge)
         for pattern in patterns_to_merge:
-            print(pattern)
             p_finder.merge_join(pattern)
     if len(pattern_to_color) > 0:
         pattern_to_color = json.loads(pattern_to_color)

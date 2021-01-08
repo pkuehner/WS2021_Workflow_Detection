@@ -51,14 +51,13 @@ def model_represenation_as_image():
         return Response("Model name not defined", 400)
     try:
         if model_name == 'workflow':
+            patterns_to_merge = None
+            pattern_to_color = {}
             if 'pattern_id' in request.values:
-                model_path = discover_wf_model(log_path, model_name, patterns_to_merge=request.values['pattern_id'])
-            elif 'color_id' in request.values:
-                model_path = discover_wf_model(log_path, model_name, pattern_to_color=request.values['color_id'])
-            elif 'pattern_id' and 'color_id' in request.values:
-                model_path = discover_wf_model(log_path, model_name,  patterns_to_merge=request.values['pattern_id'], pattern_to_color=request.values['color_id'])
-            else:
-                model_path = discover_wf_model(log_path, model_name)
+                patterns_to_merge=request.values['pattern_id']
+            if 'color_id' in request.values:
+                pattern_to_color=request.values['color_id']
+            model_path = discover_wf_model(log_path, model_name,  patterns_to_merge=patterns_to_merge, pattern_to_color=pattern_to_color)
         elif model_name == 'bpmn':
             if 'pattern_id' in request.values:
                 model_path = discover_bpmn_model(log_path, model_name, patterns_to_merge=request.values['pattern_id'])
