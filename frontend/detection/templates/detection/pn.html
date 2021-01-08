@@ -6,7 +6,9 @@
 <div class="row">
     <div class="container full" style="text-align: center;">
         {% if show_model %}
-        <img id="imagemodel" src="{% static 'detection/models/pn.png' %}" class="responsive" alt="Model">
+        <div id="imagecontainer" style="overflow: hidden; resize: vertical;">
+            <img id="imagemodel" src="{% static 'detection/models/pn.png' %}" class="responsive" alt="Model">
+        </div>
         {% endif %}
         
         <div id="spinner" style="display: none" class="loader"></div>
