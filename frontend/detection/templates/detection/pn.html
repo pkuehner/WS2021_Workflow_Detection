@@ -38,13 +38,12 @@
 
 <div class="row">
     <div class="container full" style="text-align: center;">
+        <div id="spinner" style="display: none" class="loader"></div>
         {% if show_model %}
         <div id="imagecontainer" style="overflow: hidden; resize: vertical;">
             <img id="imagemodel" src="{% static 'detection/models/pn.png' %}" class="responsive" alt="Model">
         </div>
         {% endif %}
-        
-        <div id="spinner" style="display: none" class="loader"></div>
     </div>
 </div>
 
