@@ -53,7 +53,7 @@ def get_m_in_discriminator(log, incoming, outgoing, xor=False):
         trace = trace['variant'].split(',')
         if xor:
             # only check for one element
-            outgoing = outgoing[0]
+            outgoing = [outgoing[0]]
         merged = incoming + outgoing
         check = all(item in trace for item in merged)
         if check:

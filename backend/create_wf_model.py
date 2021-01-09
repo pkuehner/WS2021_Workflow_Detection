@@ -218,7 +218,7 @@ def change_and_to_multi_merge(wf, and_split, and_join, loop_split, loop_join):
 
     return wf
 
-def change_loop_or_to_discriminator(wf, or_split, or_join, loop_split, loop_join, loop_redo_nodes, counter):
+def change_loop_or_to_discriminator(wf, or_split, or_join, loop_split, loop_join, loop_redo_nodes, discriminator_name, counter):
     from wf_graph import WF
 
     last_in_loop = None
@@ -226,8 +226,8 @@ def change_loop_or_to_discriminator(wf, or_split, or_join, loop_split, loop_join
     endEvent = None
     flows_to_remove = set()
     flows_to_add = []
-    split_name = "parallel_discr_" + str(counter) + "_split"
-    join_name = "parallel_discr_" + str(counter) + "_join"
+    split_name = "parallel_discr_"+discriminator_name+"_" + str(counter) + "_split"
+    join_name = "parallel_discr_"+discriminator_name+"_" + str(counter) + "_join"
     split_node = WF.ParallelGateway(split_name)
     join_node = WF.ParallelGateway(join_name)
 

@@ -28,7 +28,7 @@ def discover_wf_model(log_path, model_name, patterns_to_merge = None, pattern_to
     log = import_file(log_path, False)
     ptree = inductive_miner.apply_tree(log)
     wf_model = pt_converter.apply(ptree)
-    p_finder = pattern_finder(wf_model)
+    p_finder = pattern_finder(log, wf_model)
     if patterns_to_merge:
         patterns_to_merge = json.loads(patterns_to_merge)
         for pattern in patterns_to_merge:
@@ -58,12 +58,12 @@ def discover_pn_model(log_path, model_name, patterns_to_merge = None):
     log = import_file(log_path, False)
     ptree = inductive_miner.apply_tree(log)
     wf_model = pt_converter.apply(ptree)
-    p_finder = pattern_finder(wf_model, advanced_patterns = False)
+    p_finder = pattern_finder(log, wf_model, advanced_patterns = False)
     if patterns_to_merge:
-        print(patterns_to_merge)
+        #print(patterns_to_merge)
         patterns_to_merge = json.loads(patterns_to_merge)
         for pattern in patterns_to_merge:
-            print(pattern)
+            #print(pattern)
             p_finder.merge_join(pattern)
     bpmn = convert_wf_to_bpmn(p_finder.wf_model)
     net, initial_marking, final_marking = bpmn_converter.apply(bpmn, variant=bpmn_converter.Variants.TO_PETRI_NET)
@@ -90,12 +90,12 @@ def discover_bpmn_model(log_path, model_name, patterns_to_merge = None):
     log = import_file(log_path, False)
     ptree = inductive_miner.apply_tree(log)
     wf_model = pt_converter.apply(ptree)
-    p_finder = pattern_finder(wf_model, advanced_patterns = False)
+    p_finder = pattern_finder(log, wf_model, advanced_patterns = False)
     if patterns_to_merge:
-        print(patterns_to_merge)
+        #print(patterns_to_merge)
         patterns_to_merge = json.loads(patterns_to_merge)
         for pattern in patterns_to_merge:
-            print(pattern)
+            #print(pattern)
             p_finder.merge_join(pattern)
     bpmn = convert_wf_to_bpmn(p_finder.wf_model)
     gviz = bpmn_visualizer.apply(bpmn)
@@ -120,7 +120,7 @@ def discover_patterns(log_path, pattern_id = None):
     log = import_file(log_path, False)
     ptree = inductive_miner.apply_tree(log)
     wf_model = pt_converter.apply(ptree)
-    p_finder = pattern_finder(wf_model)
+    p_finder = pattern_finder(log, wf_model)
     if pattern_id:
         p_finder.merge_join(pattern_id)
     return p_finder.patterns_to_json()
