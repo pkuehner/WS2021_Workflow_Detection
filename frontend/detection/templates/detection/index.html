@@ -15,44 +15,35 @@
 </div>
 
 <div class="row">
-    <div class="three-quarter" style="text-align: center;">
         {% block model_representation %}
-        <span style="font-size: 2em;">Please select an event log</span>
-        <div id="spinner" style="display: none" class="loader"></div>
-        {% endblock %}
-    </div>
-    <div class="quarter column container">
-        <div class="container">
-            {% block merge_pattern %}
-            {% endblock %}
-
-            {% block color_pattern %}
-            {% endblock %}
-            {% block upload_log %}
+        <div class="quarter">
+        </div>
+        <div class="half index-container">
+            <div id="spinner" class="index-loader"></div>
+            <span style="font-size: 2em;">Please select an event log</span>
             <form method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
                 <div class="row">
-                    <div class="half upload">
+                    <div class="full upload index-button">
                         <label  class="label theme"><i class="fa fa-file"></i> Choose file... 
                             <input id="file-upload" type="file" name="document"/>
                         </label>
                         <label id="file-name"></label>
-                    </div>
-                    <div class="half">
+                    </div>                    
+                </div>
+                <div class="row">
+                    <div class="full index-button">
                         <button type="submit" name ="upload" onclick="uploadFile();" class="theme"><i class="fa fa-upload"></i> Upload file</button>
                     </div>
-                    
                 </div>
                 {% if upload_error %}
                 <span style="color: red; font-size: 1.5em;">{{ upload_error }}</span>
                 {% endif %}
             </form>
-            {% endblock %}
-            {% block export_model %}
-            {% endblock %}
-            {% block export_json %}
-            {% endblock %}
         </div>
+        <div class="quarter">
+        </div>
+        {% endblock %}
     </div>
 </div>
 

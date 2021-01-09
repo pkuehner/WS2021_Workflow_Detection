@@ -1,29 +1,89 @@
 {% extends 'detection/index.html' %}
 {% load static %}
+
 {% block model_representation %}
+<div class="three-quarter" style="text-align: center;">
+    <input type="hidden" id="modelName" name="variable" value="{{ model_name }}">
 
-<input type="hidden" id="modelName" name="variable" value="{{ model_name }}">
-
-<form method="POST" enctype="multipart/form-data">
-    {% csrf_token %}
-    <div class="row" style="margin: 10px;">
-        <div class="quarter"></div>
-        <div class="row half">
-            <div class="quarter">
-                <button type="submit" id="workflow" name ="workflow" class="theme tab firstTab" onclick="uploadFile();">Workflow Model</button>
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="row" style="margin: 10px;">
+            <div class="quarter"></div>
+            <div class="row half">
+                <div class="quarter">
+                    <button type="submit" id="workflow" name ="workflow" class="theme tab firstTab" onclick="uploadFile();">Workflow Model</button>
+                </div>
+                <div class="quarter middleTab">
+                    <button type="submit" id="bpmn" name ="bpmn" class="theme tab" onclick="uploadFile();">BPMN Model</button>
+                </div>
+                <div class="quarter">
+                    <button type="submit" id="pn" name ="pn" class="theme tab lastTab" onclick="uploadFile();">Petri Net</button>
+                </div>
             </div>
-            <div class="quarter middleTab">
-                <button type="submit" id="bpmn" name ="bpmn" class="theme tab" onclick="uploadFile();">BPMN Model</button>
+            
+            <div class="quarter"></div>
+        </div>
+    </form>
+    {% block image_model %}
+    {% endblock %}
+</div>
+<div class="quarter column container">
+    <div class="container">
+        {% block merge_pattern %}
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            {% for pattern in patterns %}
+                {% if pattern.pattern_type == "XOR Split" or pattern.pattern_type == "OR Split" or pattern.pattern_type == "AND Split" %}
+                <div class="row">
+                    <div style="flex: 90%">
+                        <label class="checkbox theme">{{ pattern.pattern_type }} : {{ pattern.pattern_node }} 
+                            <input id="{{ pattern.pattern_node }}" name="{{ pattern.pattern_node }}" type="checkbox" {% if pattern.checked %} checked {% endif %}>
+                            <span class="checkmark"></span>
+                        </label>
+                    </div>
+                </div>
+                {% endif %}
+            {% endfor %}
+            <br/>
+            <button type="submit" name ="aggregate-pattern" class="theme"><i class="fa fa-filter"></i> Aggregate Pattern</button>
+        </form>
+        <hr/>
+        {% endblock %}
+        {% block color_pattern %}
+        {% endblock %}
+        {% block upload_log %}
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row">
+                <div class="half upload">
+                    <label  class="label theme"><i class="fa fa-file"></i> Choose file... 
+                        <input id="file-upload" type="file" name="document"/>
+                    </label>
+                    <label id="file-name"></label>
+                </div>
+                <div class="half">
+                    <button type="submit" name ="upload" onclick="uploadFile();" class="theme"><i class="fa fa-upload"></i> Upload file</button>
+                </div>
+                
             </div>
-            <div class="quarter">
-                <button type="submit" id="pn" name ="pn" class="theme tab lastTab" onclick="uploadFile();">Petri Net</button>
+            {% if upload_error %}
+            <span style="color: red; font-size: 1.5em;">{{ upload_error }}</span>
+            {% endif %}
+        </form>
+        {% endblock %}
+        {% block export_model %}
+        <div class="row">
+            <div class="full">
+                {% with 'detection/models/'|add:model_name|add:'.png' as model_image %}
+                <a class="theme download export" href="{% static model_image %}" download>
+                    <i class="fa fa-download"></i> Export Model 
+                </a>
+                {% endwith %}
             </div>
         </div>
-        
-        <div class="quarter"></div>
+        {% endblock %}
+        {% block export_json %}
+        {% endblock %}
     </div>
-</form>
-
-{% block image_model %}
-{% endblock %}
+</div>
 {% endblock %}

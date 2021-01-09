@@ -1,41 +1,7 @@
 {% extends 'detection/navigation.html' %}
 {% load static %}
 
-{% block merge_pattern %}
-<form method="POST" enctype="multipart/form-data">
-    {% csrf_token %}
-    {% for pattern in patterns %}
-        {% if pattern.pattern_type == "XOR Split" or pattern.pattern_type == "OR Split" or pattern.pattern_type == "AND Split" %}
-        <div class="row">
-            <div style="flex: 90%">
-                <label class="checkbox theme">{{ pattern.pattern_type }} : {{ pattern.pattern_node }} 
-                    <input id="{{ pattern.pattern_node }}" name="{{ pattern.pattern_node }}" type="checkbox" {% if pattern.checked %} checked {% endif %}>
-                    <span class="checkmark"></span>
-                </label>
-            </div>
-        </div>
-        {% endif %}
-    {% endfor %}
-    <br/>
-    <button type="submit" name ="aggregate-pattern" class="theme"><i class="fa fa-filter"></i> Aggregate Pattern</button>
-</form>
-<hr/>
-{% endblock %}
-
-{% block export_model %}
-<div class="row">
-    <div class="full">
-        {% with 'detection/models/'|add:model_name|add:'.png' as model_image %}
-        <a class="theme download export" href="{% static model_image %}" download>
-            <i class="fa fa-download"></i> Export Model 
-        </a>
-        {% endwith %}
-    </div>
-</div>
-{% endblock %}
-
 {% block image_model %}
-
 <div class="row">
     <div class="container full" style="text-align: center;">
         <div id="spinner" style="display: none" class="loader"></div>
@@ -46,5 +12,4 @@
         {% endif %}
     </div>
 </div>
-
 {% endblock %}

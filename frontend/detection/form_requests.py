@@ -55,8 +55,12 @@ def handle_upload(request, context):
         request.session['log_path'] = file_path
         image_result = discover_model_as_image(file_path, 'workflow')
         json_result = discover_workflow_patterns_as_json(file_path)
-        parse_json = json.loads(json_result)
-        patterns = json.loads(parse_json["patterns"])
+        try:
+            parse_json = json.loads(json_result)
+            patterns = json.loads(parse_json["patterns"])
+        except:
+            context['upload_error'] = 'File import not possible. Please select a valid XES or CSV file!'
+            return render(request, 'detection/index.html', context)
         for pattern in patterns:
             pattern['checked'] = False
         for pattern in patterns:
