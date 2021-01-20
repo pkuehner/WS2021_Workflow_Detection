@@ -12,7 +12,7 @@ from pattern_util import pattern_finder
 class TestPatternUtil(unittest.TestCase):
 
     def test_or(self):
-        log_csv = pd.read_csv('test-data/OR.csv', sep=',')
+        log_csv = pd.read_csv('../test-data/OR.csv', sep=',')
         log_csv = dataframe_utils.convert_timestamp_columns_in_df(log_csv)
         log_csv = log_csv.sort_values('time:timestamp')
         log = log_converter.apply(log_csv)
@@ -26,7 +26,7 @@ class TestPatternUtil(unittest.TestCase):
         self.assertIn('or_1_split', patterns)
 
     def test_loop(self):
-        log_csv = pd.read_csv('test-data/LOOP.csv', sep=',')
+        log_csv = pd.read_csv('../test-data/LOOP.csv', sep=',')
         log_csv = dataframe_utils.convert_timestamp_columns_in_df(log_csv)
         log_csv = log_csv.sort_values('time:timestamp')
         log = log_converter.apply(log_csv)
@@ -41,7 +41,7 @@ class TestPatternUtil(unittest.TestCase):
         self.assertEqual(patterns['xor_1_split']['isLoop'], True)
 
     def test_and(self):
-        log_csv = pd.read_csv('test-data/AND.csv', sep=',')
+        log_csv = pd.read_csv('../test-data/AND.csv', sep=',')
         log_csv = dataframe_utils.convert_timestamp_columns_in_df(log_csv)
         log_csv = log_csv.sort_values('time:timestamp')
         log = log_converter.apply(log_csv)
@@ -55,7 +55,7 @@ class TestPatternUtil(unittest.TestCase):
         self.assertIn('parallel_1_split', patterns)
 
     def test_multimerge(self):
-        log_csv = pd.read_csv('test-data/multi-merge.csv', sep=',')
+        log_csv = pd.read_csv('../test-data/multi-merge.csv', sep=',')
         log_csv = dataframe_utils.convert_timestamp_columns_in_df(log_csv)
         log_csv = log_csv.sort_values('time:timestamp')
         log = log_converter.apply(log_csv)
@@ -70,7 +70,7 @@ class TestPatternUtil(unittest.TestCase):
         self.assertEqual(patterns['parallel_1_split']['is_multi_merge'], True)
 
     def test_multimerge_tracevalidation(self):
-        log_csv = pd.read_csv('test-data/LOOP2.csv', sep=',')
+        log_csv = pd.read_csv('../test-data/LOOP2.csv', sep=',')
         log_csv = dataframe_utils.convert_timestamp_columns_in_df(log_csv)
         log_csv = log_csv.sort_values('time:timestamp')
         log = log_converter.apply(log_csv)
@@ -85,7 +85,7 @@ class TestPatternUtil(unittest.TestCase):
         self.assertEqual(patterns['parallel_1_split']['is_multi_merge'], False)
 
     def test_XOR(self):
-        log_csv = pd.read_csv('test-data/XOR.csv', sep=',')
+        log_csv = pd.read_csv('../test-data/XOR.csv', sep=',')
         log_csv = dataframe_utils.convert_timestamp_columns_in_df(log_csv)
         log_csv = log_csv.sort_values('time:timestamp')
         log = log_converter.apply(log_csv)
@@ -99,7 +99,7 @@ class TestPatternUtil(unittest.TestCase):
         self.assertIn('xor_1_split', patterns)
 
     def test_discriminator(self):
-        log_csv = pd.read_csv('test-data/1-out-of-4.csv', sep=',')
+        log_csv = pd.read_csv('../test-data/1-out-of-4.csv', sep=',')
         log_csv = dataframe_utils.convert_timestamp_columns_in_df(log_csv)
         log_csv = log_csv.sort_values('time:timestamp')
         log = log_converter.apply(log_csv)
@@ -113,7 +113,7 @@ class TestPatternUtil(unittest.TestCase):
         self.assertIn('parallel_discr_1_of_4_1_split', patterns)
 
     def test_discriminator(self):
-        log_csv = pd.read_csv('test-data/2-out-of-4.csv', sep=',')
+        log_csv = pd.read_csv('../test-data/2-out-of-4.csv', sep=',')
         log_csv = dataframe_utils.convert_timestamp_columns_in_df(log_csv)
         log_csv = log_csv.sort_values('time:timestamp')
         log = log_converter.apply(log_csv)
@@ -127,7 +127,7 @@ class TestPatternUtil(unittest.TestCase):
         self.assertIn('parallel_discr_2_of_4_1_split', patterns)
 
     def test_merge(self):
-        log_csv = pd.read_csv('test-data/XOR.csv', sep=',')
+        log_csv = pd.read_csv('../test-data/XOR.csv', sep=',')
         log_csv = dataframe_utils.convert_timestamp_columns_in_df(log_csv)
         log_csv = log_csv.sort_values('time:timestamp')
         log = log_converter.apply(log_csv)
@@ -144,7 +144,7 @@ class TestPatternUtil(unittest.TestCase):
         self.assertNotIn('xor_1_split', patterns)
 
     def test_patterns_to_json(self):
-        log_csv = pd.read_csv('test-data/or_loop.csv', sep=',')
+        log_csv = pd.read_csv('../test-data/or_loop.csv', sep=',')
         log_csv = dataframe_utils.convert_timestamp_columns_in_df(log_csv)
         log_csv = log_csv.sort_values('time:timestamp')
         log = log_converter.apply(log_csv)
