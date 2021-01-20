@@ -1,8 +1,7 @@
-import pm4py
-from pm4py.objects.bpmn.importer import importer as bpmn_importer
-from pm4py.objects.conversion.bpmn import converter as bpmn_converter
-from wf_graph import WF
 from pm4py.objects.bpmn.bpmn_graph import BPMN
+
+from wf_graph import WF
+
 
 def convert_wf_to_bpmn(wf_model):
     bpmn = BPMN()
@@ -25,7 +24,7 @@ def convert_wf_to_bpmn(wf_model):
         else:
             converted_node = BPMN.Task(name=node.get_name())
             bpmn.add_node(converted_node)
-        
+
     for flow in wf_model.get_flows():
         source_node = None
         target_node = None

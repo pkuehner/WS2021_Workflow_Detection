@@ -3,9 +3,8 @@ import tempfile
 from graphviz import Digraph
 
 
-
-def graphviz_visualization(wf_model, pattern_to_merge=[], loop_nodes=[], multi_merges=[], discriminators = [], pattern_to_color={}):
-
+def graphviz_visualization(wf_model, pattern_to_merge=[], loop_nodes=[], multi_merges=[], discriminators=[],
+                           pattern_to_color={}):
     """
     Do GraphViz visualization of a WF Model
     Parameters
@@ -37,30 +36,33 @@ def graphviz_visualization(wf_model, pattern_to_merge=[], loop_nodes=[], multi_m
             viz.node(node.get_id(), "End", style='filled', shape='circle', fillcolor='orange')
         elif isinstance(node, WF.ExclusiveGateway):
             if node.get_name().endswith('split'):
-                name = 'XOR-Split \n'+node.get_name()
+                name = 'XOR-Split \n' + node.get_name()
                 if node.get_name() in loop_nodes:
-                    name = 'LOOP-End \n'+node.get_name()
+                    name = 'LOOP-End \n' + node.get_name()
                 viz.node(node.get_id(), name, style='filled', shape='diamond', color=node_color)
             else:
-                name = 'XOR-Join \n'+node.get_name()
+                name = 'XOR-Join \n' + node.get_name()
                 if node.get_name() in loop_nodes:
-                    name = 'LOOP-Start \n'+node.get_name()
+                    name = 'LOOP-Start \n' + node.get_name()
                 viz.node(node.get_id(), name, style='filled', shape='diamond', color=node_color)
         elif isinstance(node, WF.ParallelGateway):
             if node.get_name().endswith('split'):
-                viz.node(node.get_id(), "AND-Split \n"+node.get_name(), style='filled', shape='diamond', color=node_color)
+                viz.node(node.get_id(), "AND-Split \n" + node.get_name(), style='filled', shape='diamond',
+                         color=node_color)
             else:
-                name = "AND-Join \n"+node.get_name()
+                name = "AND-Join \n" + node.get_name()
                 if node.get_name() in multi_merges:
-                    name = 'Multi-Merge \n'+node.get_name()
+                    name = 'Multi-Merge \n' + node.get_name()
                 elif node.get_name() in discriminators:
-                    name = 'Discriminator \n'+node.get_name()
+                    name = 'Discriminator \n' + node.get_name()
                 viz.node(node.get_id(), name, style='filled', shape='diamond', color=node_color)
         elif isinstance(node, WF.InclusiveGateway):
             if node.get_name().endswith('split'):
-                viz.node(node.get_id(), "OR-Split \n"+node.get_name(), style='filled', shape='diamond', color=node_color)
+                viz.node(node.get_id(), "OR-Split \n" + node.get_name(), style='filled', shape='diamond',
+                         color=node_color)
             else:
-                viz.node(node.get_id(), "OR-Join \n"+node.get_name(), style='filled', shape='diamond', color=node_color)
+                viz.node(node.get_id(), "OR-Join \n" + node.get_name(), style='filled', shape='diamond',
+                         color=node_color)
         else:
             viz.node(node.get_id(), node.get_name(), style='filled')
 

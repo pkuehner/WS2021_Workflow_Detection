@@ -1,10 +1,11 @@
 import flask
 from flask import request, send_file, Response, jsonify
+
 from model_detection import discover_wf_model, discover_bpmn_model, discover_pn_model, discover_patterns
-import json
 
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
+
 
 def save_event_log(request):
     """
@@ -54,10 +55,11 @@ def model_represenation_as_image():
             patterns_to_merge = None
             pattern_to_color = {}
             if 'pattern_id' in request.values:
-                patterns_to_merge=request.values['pattern_id']
+                patterns_to_merge = request.values['pattern_id']
             if 'color_id' in request.values:
-                pattern_to_color=request.values['color_id']
-            model_path = discover_wf_model(log_path, model_name,  patterns_to_merge=patterns_to_merge, pattern_to_color=pattern_to_color)
+                pattern_to_color = request.values['color_id']
+            model_path = discover_wf_model(log_path, model_name, patterns_to_merge=patterns_to_merge,
+                                           pattern_to_color=pattern_to_color)
         elif model_name == 'bpmn':
             if 'pattern_id' in request.values:
                 model_path = discover_bpmn_model(log_path, model_name, patterns_to_merge=request.values['pattern_id'])

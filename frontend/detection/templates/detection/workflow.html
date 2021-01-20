@@ -5,17 +5,18 @@
 <form method="POST" enctype="multipart/form-data">
     {% csrf_token %}
     {% for pattern in patterns %}
-        {% if pattern.pattern_type != "Sequence" %}
-        <div class="row">
-            <input type="color" id="color-{{ pattern.pattern_node }}" name="color-{{ pattern.pattern_node }}" value="{{ pattern.color }}">
-            <div style="flex: 90%">
-                <label class="checkbox theme">{{ pattern.pattern_type }} : {{ pattern.pattern_node }} 
-                </label>
-            </div>
+    {% if pattern.pattern_type != "Sequence" %}
+    <div class="row">
+        <input type="color" id="color-{{ pattern.pattern_node }}" name="color-{{ pattern.pattern_node }}"
+               value="{{ pattern.color }}">
+        <div style="flex: 90%">
+            <label class="checkbox theme">{{ pattern.pattern_type }} : {{ pattern.pattern_node }}
+            </label>
         </div>
-        {% endif %}
+    </div>
+    {% endif %}
     {% endfor %}
-    <button type="submit" name ="color-pattern" class="theme"><i class="fa fa-paint-brush"></i> Color Pattern</button>
+    <button type="submit" name="color-pattern" class="theme"><i class="fa fa-paint-brush"></i> Color Pattern</button>
 </form>
 <hr/>
 {% endblock %}
@@ -37,7 +38,7 @@
         <div id="spinner" style="display: none" class="loader"></div>
         {% if show_model %}
         <div id="imagecontainer" style="overflow: hidden; resize: vertical;">
-        <img id="imagemodel" src="{% static 'detection/models/workflow.png' %}" class="responsive" alt="Model">
+            <img id="imagemodel" src="{% static 'detection/models/workflow.png' %}" class="responsive" alt="Model">
         </div>
         {% endif %}
         {% block content %}

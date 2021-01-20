@@ -1,8 +1,11 @@
-from django.shortcuts import render, redirect
-from django.core.files.storage import FileSystemStorage
-from .client import discover_model_as_image, discover_workflow_patterns_as_json
-import os.path
 import json
+import os.path
+
+from django.core.files.storage import FileSystemStorage
+from django.shortcuts import render, redirect
+
+from .client import discover_model_as_image, discover_workflow_patterns_as_json
+
 
 def send_log_to_backend(request, context, model_name):
     patterns_to_merge = []
@@ -10,7 +13,7 @@ def send_log_to_backend(request, context, model_name):
     if request.session.get('patterns', None):
         patterns = request.session['patterns']
         for pattern in patterns:
-            if pattern['checked'] == True:
+            if pattern['checked']:
                 patterns_to_merge.append(pattern['pattern_node'])
             if pattern['color'] is not None:
                 patterns_to_color[pattern['pattern_node']] = pattern['color']
@@ -30,8 +33,10 @@ def send_log_to_backend(request, context, model_name):
         context['upload_error'] = 'No event log found!'
         return render(request, 'detection/index.html', context)
 
+
 def is_navigation_request(request):
     return any(x in request.POST for x in ['bpmn', 'workflow', 'pn'])
+
 
 def handle_navigation(request, context):
     if 'workflow' in request.POST:
@@ -43,14 +48,16 @@ def handle_navigation(request, context):
     else:
         return redirect('index')
 
+
 def is_upload_request(request):
     return 'upload' in request.POST
+
 
 def handle_upload(request, context):
     if request.FILES:
         uploaded_file = request.FILES['document']
         fs = FileSystemStorage()
-        path = 'logs/'+uploaded_file.name
+        path = 'logs/' + uploaded_file.name
         file_path = fs.save(path, uploaded_file)
         request.session['log_path'] = file_path
         image_result = discover_model_as_image(file_path, 'workflow')
@@ -58,7 +65,7 @@ def handle_upload(request, context):
         try:
             parse_json = json.loads(json_result)
             patterns = json.loads(parse_json["patterns"])
-        except:
+        except Exception:
             context['upload_error'] = 'File import not possible. Please select a valid XES or CSV file!'
             return render(request, 'detection/index.html', context)
         for pattern in patterns:
@@ -75,8 +82,10 @@ def handle_upload(request, context):
         context['upload_error'] = 'Please select a valid file'
         return render(request, 'detection/index.html', context)
 
+
 def is_merge_request(request):
     return 'aggregate-pattern' in request.POST
+
 
 def handle_merge_request(request, context, model_name):
     if request.session.get('patterns', None):
@@ -94,8 +103,10 @@ def handle_merge_request(request, context, model_name):
         context['upload_error'] = 'No event log found!'
         return render(request, 'detection/index.html', context)
 
+
 def is_color_request(request):
     return 'color-pattern' in request.POST
+
 
 def handle_color_request(request, context, model_name):
     if request.session.get('patterns', None):
@@ -104,7 +115,7 @@ def handle_color_request(request, context, model_name):
             pattern['color'] = '#D3D3D3'
     if request.session.get('log_path', None):
         for pattern in patterns:
-            color_id = 'color-'+str(pattern['pattern_node'])
+            color_id = 'color-' + str(pattern['pattern_node'])
             color = request.POST.get(color_id, None)
             pattern['color'] = color
 
@@ -118,7 +129,7 @@ def get_model_representation(request, model_name):
     context = {}
     context['model_name'] = None
     context['show_model'] = False
-    
+
     if is_navigation_request(request):
         return handle_navigation(request, context)
     if is_upload_request(request):
@@ -127,10 +138,10 @@ def get_model_representation(request, model_name):
         return handle_merge_request(request, context, model_name)
     if is_color_request(request):
         return handle_color_request(request, context, model_name)
-    image_path = 'detection/static/detection/models/'+ model_name +'.png'
+    image_path = 'detection/static/detection/models/' + model_name + '.png'
     if os.path.isfile(image_path):
         context['show_model'] = True
     context['model_name'] = model_name
     if request.session.get('patterns', None):
         context['patterns'] = request.session['patterns']
-    return render(request, 'detection/'+ model_name +'.html', context)
+    return render(request, 'detection/' + model_name + '.html', context)

@@ -1,5 +1,7 @@
-import pandas as pd
 import itertools
+
+import pandas as pd
+
 
 def generate_test(m, n, saveas=''):
     """This function creates a test file for a m out of n discriminator pattern and saves it as csv
@@ -12,28 +14,27 @@ def generate_test(m, n, saveas=''):
                """
 
     if (m >= n):
-        print('Error: '+str(n)+' is bigger/equal than '+str(n))
+        print('Error: ' + str(n) + ' is bigger/equal than ' + str(n))
         exit(0)
     start = 'A'
     end = 'C'
     inner = []
     for i in range(n):
-        inner.append('B'+str(i))
+        inner.append('B' + str(i))
 
     perm_inner = list(itertools.permutations(inner, m))
 
     # convert elements from tuple to list
     perm_inner = [list(i) for i in perm_inner]
 
-    sol=[]
+    sol = []
     for case in perm_inner:
         case.append(end)
-        case.insert(0,start)
+        case.insert(0, start)
         not_in_perm = get_not_in(inner, case)
         # append activities which are not in the main part in any order
         for j in not_in_perm:
-            sol.append(case+j)
-
+            sol.append(case + j)
 
     merged_perm = perm_inner
 
@@ -44,7 +45,7 @@ def generate_test(m, n, saveas=''):
     activities = []
     for caseid in range(len(sol)):
         for j in range(len(sol[caseid])):
-            cases.append(caseid+1)
+            cases.append(caseid + 1)
             activities.append(sol[caseid][j])
 
     timestamps = pd.date_range(start='1/1/2018', freq='H', periods=len(cases))
@@ -53,11 +54,12 @@ def generate_test(m, n, saveas=''):
             'time:timestamp': timestamps
             }
     df = pd.DataFrame(data, columns=['case:concept:name', 'concept:name', 'time:timestamp'])
-    df.to_csv(saveas+str(m)+'-out-of-'+str(n)+'.csv', index=False)
+    df.to_csv(saveas + str(m) + '-out-of-' + str(n) + '.csv', index=False)
     return sol
 
-def get_not_in(inner,case):
-    res=[]
+
+def get_not_in(inner, case):
+    res = []
     for b_inner in inner:
         # append activities which are not in the main part in any order
         if b_inner not in case:
@@ -67,4 +69,4 @@ def get_not_in(inner,case):
     return perm_res
 
 
-test = generate_test(2,4)
+test = generate_test(2, 4)

@@ -1,5 +1,6 @@
 import pm4py
 
+
 def validate_multi_merge_in_trace(log, incoming, outgoing):
     """
         Checks if multi-merge pattern is a multi-merge in log
@@ -34,6 +35,7 @@ def validate_multi_merge_in_trace(log, incoming, outgoing):
 
     return sol
 
+
 def get_m_in_discriminator(log, incoming, outgoing, xor=False):
     """
             Finds the m of a potential m-out-of-n discriminator
@@ -49,7 +51,7 @@ def get_m_in_discriminator(log, incoming, outgoing, xor=False):
     sol = []
     variants = pm4py.statistics.traces.log.case_statistics.get_variant_statistics(log)
     for trace in variants:
-        #print(trace['variant'])
+        # print(trace['variant'])
         trace = trace['variant'].split(',')
         if xor:
             # only check for one element
@@ -60,7 +62,7 @@ def get_m_in_discriminator(log, incoming, outgoing, xor=False):
             counter = 0
             for a_in in incoming:
                 if all(trace.index(a_in) < trace.index(a_out) for a_out in outgoing):
-                    counter +=1
+                    counter += 1
             sol.append(counter)
     if len(set(sol)) == 1:
         return sol[0]

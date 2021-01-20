@@ -1,14 +1,11 @@
 import unittest
+
 import pandas as pd
-from pm4py.objects.log.util import dataframe_utils
-from pm4py.objects.conversion.log import converter as log_converter
-import create_wf_model as pt_converter
-from create_wf_model import change_and_xor_to_or, merge_split_join, change_and_to_multi_merge, \
-    change_loop_or_to_discriminator
 from pm4py.algo.discovery.inductive import algorithm as inductive_miner
-from pm4py.visualization.common import save as gsave
-from wf_graph import WF
-from wf_pattern_visualizer import graphviz_visualization as wf_visualizer
+from pm4py.objects.conversion.log import converter as log_converter
+from pm4py.objects.log.util import dataframe_utils
+
+import create_wf_model as pt_converter
 from pattern_util import pattern_finder
 
 
@@ -71,8 +68,6 @@ class TestPatternUtil(unittest.TestCase):
 
         self.assertIn('parallel_1_split', patterns)
         self.assertEqual(patterns['parallel_1_split']['is_multi_merge'], True)
-
-
 
     def test_multimerge_tracevalidation(self):
         log_csv = pd.read_csv('test-data/LOOP2.csv', sep=',')
@@ -160,7 +155,15 @@ class TestPatternUtil(unittest.TestCase):
         p_finder = pattern_finder(log, wf_model)
 
         patterns = p_finder.patterns_to_json()
-        self.assertEqual(patterns, '[{"pattern_node": "or_1_split", "incoming_nodes": ["a"], "outgoing_nodes": ["b", "c"], "pattern_type": "OR Split"}, {"pattern_node": "or_1_join", "incoming_nodes": ["b", "c"], "outgoing_nodes": ["e"], "pattern_type": "OR Join"}, {"pattern_node": "xor_1_split", "incoming_nodes": ["f"], "outgoing_nodes": ["end", "xor_1_join"], "pattern_type": "Loop End"}, {"pattern_node": "xor_1_join", "incoming_nodes": ["start", "xor_1_split"], "outgoing_nodes": ["a"], "pattern_type": "Loop Start"}, {"pattern_node": "e", "incoming_nodes": [], "outgoing_nodes": ["f"], "pattern_type": "Sequence"}]')
+        self.assertEqual(patterns,
+                         '[{"pattern_node": "or_1_split", "incoming_nodes": ["a"], "outgoing_nodes": ["b", "c"], '
+                         '"pattern_type": "OR Split"}, {"pattern_node": "or_1_join", "incoming_nodes": ["b", "c"], '
+                         '"outgoing_nodes": ["e"], "pattern_type": "OR Join"}, {"pattern_node": "xor_1_split", '
+                         '"incoming_nodes": ["f"], "outgoing_nodes": ["end", "xor_1_join"], "pattern_type": "Loop '
+                         'End"}, {"pattern_node": "xor_1_join", "incoming_nodes": ["start", "xor_1_split"], '
+                         '"outgoing_nodes": ["a"], "pattern_type": "Loop Start"}, {"pattern_node": "e", '
+                         '"incoming_nodes": [], "outgoing_nodes": ["f"], "pattern_type": "Sequence"}]')
+
 
 if __name__ == '__main__':
     unittest.main()

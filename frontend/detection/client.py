@@ -3,7 +3,7 @@ import requests
 base_url = 'http://localhost:5000'
 
 
-def discover_model_as_image(log_path, image_name, pattern_id = None, color_id = None):
+def discover_model_as_image(log_path, image_name, pattern_id=None, color_id=None):
     """
     Upload the event log to the backend
     Parameters
@@ -37,7 +37,8 @@ def discover_model_as_image(log_path, image_name, pattern_id = None, color_id = 
             return True
     return False
 
-def discover_workflow_patterns_as_json(log_path, pattern_id = None):
+
+def discover_workflow_patterns_as_json(log_path, pattern_id=None):
     """
     Upload the event log to the backend
     Parameters

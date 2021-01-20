@@ -105,8 +105,8 @@ def change_and_xor_to_or(wf, and_split, and_join, xors, counter):
 
     """
     from wf_graph import WF
-    split_name = "or_"+str(counter)+"_split"
-    join_name = "or_"+str(counter)+"_join"
+    split_name = "or_" + str(counter) + "_split"
+    join_name = "or_" + str(counter) + "_join"
 
     flows_in = []
     flows_out = []
@@ -163,6 +163,7 @@ def change_and_xor_to_or(wf, and_split, and_join, xors, counter):
 
     return wf
 
+
 def change_and_to_multi_merge(wf, and_split, and_join, loop_split, loop_join):
     """
     Rewires and join to multi merge in wf_model
@@ -204,7 +205,6 @@ def change_and_to_multi_merge(wf, and_split, and_join, loop_split, loop_join):
             last_in_loop = flow.get_source()
             flows_to_remove.add(flow)
 
-
     for flow in flows_to_add:
         wf.add_flow(flow)
 
@@ -218,7 +218,9 @@ def change_and_to_multi_merge(wf, and_split, and_join, loop_split, loop_join):
 
     return wf
 
-def change_loop_or_to_discriminator(wf, or_split, or_join, loop_split, loop_join, loop_redo_nodes, discriminator_name, counter):
+
+def change_loop_or_to_discriminator(wf, or_split, or_join, loop_split, loop_join, loop_redo_nodes, discriminator_name,
+                                    counter):
     from wf_graph import WF
 
     last_in_loop = None
@@ -226,8 +228,8 @@ def change_loop_or_to_discriminator(wf, or_split, or_join, loop_split, loop_join
     endEvent = None
     flows_to_remove = set()
     flows_to_add = []
-    split_name = "parallel_discr_"+discriminator_name+"_" + str(counter) + "_split"
-    join_name = "parallel_discr_"+discriminator_name+"_" + str(counter) + "_join"
+    split_name = "parallel_discr_" + discriminator_name + "_" + str(counter) + "_split"
+    join_name = "parallel_discr_" + discriminator_name + "_" + str(counter) + "_join"
     split_node = WF.ParallelGateway(split_name)
     join_node = WF.ParallelGateway(join_name)
 
@@ -251,7 +253,8 @@ def change_loop_or_to_discriminator(wf, or_split, or_join, loop_split, loop_join
         if flow.get_source() == loop_split:
             if flow.get_target() not in loop_redo_nodes:
                 endEvent = flow.get_target()
-            else: first_in_loop = flow.get_target()
+            else:
+                first_in_loop = flow.get_target()
             flows_to_remove.add(flow)
         if flow.get_source() == or_split:
             flows_to_add.append(WF.Flow(split_node, flow.get_target()))
@@ -259,7 +262,6 @@ def change_loop_or_to_discriminator(wf, or_split, or_join, loop_split, loop_join
         if flow.get_target() == or_join:
             flows_to_add.append(WF.Flow(flow.get_source(), join_node))
             flows_to_remove.add(flow)
-
 
     for flow in flows_to_add:
         wf.add_flow(flow)
@@ -316,7 +318,7 @@ def merge_split_join(wf, split, join, inner_nodes):
     for flow in flows_to_remove:
         try:
             wf.remove_flow(flow)
-        except:
+        except Exception:
             pass
 
     wf.remove_node(split)

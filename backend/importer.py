@@ -1,10 +1,10 @@
-""" Use import_file(path, filter=True) to import xes or csv with pmy4py functions. Returns error if not a csv or xes file.
+""" Use import_file(path, filter=True) to import xes or csv with pmy4py functions.
+    Returns error if not a csv or xes file.
     activated filter = True (default) will remove traces without most frequent start and end activity
     For CSV: Expected Column names are
     case:concept:name -> case ID, concept:name -> activity, time:timestamp -> timestamp
 """
 import os
-import sys
 
 import pandas as pd
 from pm4py.algo.filtering.log.end_activities import end_activities_filter
@@ -32,7 +32,7 @@ def import_csv(path, filter=True):
     # parameters = {log_converter.Variants.TO_EVENT_LOG.value.Parameters.CASE_ID_KEY: 'Case ID'}
     log_csv = log_csv.sort_values('time:timestamp')
     event_log = log_converter.apply(
-        log_csv)  # , variant=log_converter.Variants.TO_EVENT_LOG, parameters=parameters, variant=log_converter.Variants.TO_EVENT_LOG)
+        log_csv)
     if filter:
         event_log = remove_uncomplete_traces(event_log)
     return event_log

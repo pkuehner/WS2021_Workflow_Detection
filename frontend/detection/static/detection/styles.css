@@ -16,7 +16,7 @@ body {
     font-size: 1.6em;
 }
 
-.index-container{
+.index-container {
     text-align: center;
     margin-top: 10%;
     font-size: 1.2em;
@@ -28,8 +28,8 @@ body {
 }
 
 .index-loader {
-    border: 16px solid #f3f3f3; 
-    border-top: 16px solid var(--primary-color); 
+    border: 16px solid #f3f3f3;
+    border-top: 16px solid var(--primary-color);
     border-radius: 50%;
     width: 120px;
     height: 120px;
@@ -123,8 +123,8 @@ button:hover {
 }
 
 .loader {
-    border: 16px solid #f3f3f3; 
-    border-top: 16px solid var(--primary-color); 
+    border: 16px solid #f3f3f3;
+    border-top: 16px solid var(--primary-color);
     border-radius: 50%;
     width: 120px;
     height: 120px;
@@ -134,8 +134,12 @@ button:hover {
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 /* Checkboxes */
@@ -153,6 +157,7 @@ button:hover {
     color: var(--primary-color);
     font-size: 1.3em;
 }
+
 .checkbox input {
     position: absolute;
     opacity: 0;
@@ -160,7 +165,7 @@ button:hover {
     height: 0;
     width: 0;
 }
-  
+
 .checkmark {
     position: absolute;
     top: 0;
@@ -169,25 +174,25 @@ button:hover {
     width: 25px;
     background-color: #eee;
 }
-  
+
 .checkbox:hover input ~ .checkmark {
     background-color: #ccc;
 }
-  
+
 .checkbox input:checked ~ .checkmark {
     background-color: #2196F3;
 }
-  
+
 .checkmark:after {
     content: "";
     position: absolute;
     display: none;
 }
-  
+
 .checkbox input:checked ~ .checkmark:after {
     display: block;
 }
-  
+
 .checkbox .checkmark:after {
     left: 9px;
     top: 5px;
@@ -238,6 +243,7 @@ input[type="file"] {
     font: normal 13px Arial, sans-serif;
     width: 100%;
 }
+
 .table thead th {
     background-color: #DDEFEF;
     border: solid 1px #DDEEEE;
@@ -246,6 +252,7 @@ input[type="file"] {
     text-align: left;
     text-shadow: 1px 1px 1px #fff;
 }
+
 .table tbody td {
     border: solid 1px #DDEEEE;
     color: #333;
@@ -265,14 +272,14 @@ input[type="file"] {
     text-decoration: none;
     display: inline-block;
 }
-  
+
 .export:hover, .export:active {
     background-color: var(--secondary-color);
     color: var(--primary-color);
     box-shadow: 0 0 10px var(--primary-color) inset;
 }
 
-@media only screen and (max-width:620px) {
+@media only screen and (max-width: 620px) {
     /* For mobile phones: */
     .row {
         display: flex;

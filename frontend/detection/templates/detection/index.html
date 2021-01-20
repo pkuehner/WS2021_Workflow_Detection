@@ -2,11 +2,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-<link rel="stylesheet" type="text/css" href="{% static 'detection/styles.css' %}">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-<script src='https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js'></script>
+    <link rel="stylesheet" type="text/css" href="{% static 'detection/styles.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src='https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js'></script>
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
 
@@ -15,36 +15,38 @@
 </div>
 
 <div class="row">
-        {% block model_representation %}
-        <div class="quarter">
-        </div>
-        <div class="half index-container">
-            <div id="spinner" class="index-loader"></div>
-            <span style="font-size: 2em;">Please select an event log</span>
-            <form method="POST" enctype="multipart/form-data">
-                {% csrf_token %}
-                <div class="row">
-                    <div class="full upload index-button">
-                        <label  class="label theme"><i class="fa fa-file"></i> Choose file... 
-                            <input id="file-upload" type="file" name="document"/>
-                        </label>
-                        <label id="file-name"></label>
-                    </div>                    
-                </div>
-                <div class="row">
-                    <div class="full index-button">
-                        <button type="submit" name ="upload" onclick="uploadFile();" class="theme"><i class="fa fa-upload"></i> Upload file</button>
-                    </div>
-                </div>
-                {% if upload_error %}
-                <span style="color: red; font-size: 1.5em;">{{ upload_error }}</span>
-                {% endif %}
-            </form>
-        </div>
-        <div class="quarter">
-        </div>
-        {% endblock %}
+    {% block model_representation %}
+    <div class="quarter">
     </div>
+    <div class="half index-container">
+        <div id="spinner" class="index-loader"></div>
+        <span style="font-size: 2em;">Please select an event log</span>
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row">
+                <div class="full upload index-button">
+                    <label class="label theme"><i class="fa fa-file"></i> Choose file...
+                        <input id="file-upload" type="file" name="document"/>
+                    </label>
+                    <label id="file-name"></label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="full index-button">
+                    <button type="submit" name="upload" onclick="uploadFile();" class="theme"><i
+                            class="fa fa-upload"></i> Upload file
+                    </button>
+                </div>
+            </div>
+            {% if upload_error %}
+            <span style="color: red; font-size: 1.5em;">{{ upload_error }}</span>
+            {% endif %}
+        </form>
+    </div>
+    <div class="quarter">
+    </div>
+    {% endblock %}
+</div>
 </div>
 
 </body>
